@@ -1,24 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AdSlot } from "@/components/bharatkhoj/AdSlot";
+import { Brand } from "@/components/bharatkhoj/Brand";
+import { SearchBox } from "@/components/bharatkhoj/SearchBox";
+import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const description = "BharatKhoj is India First Search Engine — a clean, privacy-conscious gateway to finding information across the web.";
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "BharatKhoj — India First Search Engine" },
+      { name: "description", content: description },
+      { property: "og:title", content: "BharatKhoj — India First Search Engine" },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
+      { name: "twitter:card", content: "summary" },
+    ],
+    links: [{ rel: "canonical", href: "/" }],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "Organization", name: "BharatKhoj", slogan: "India First Search Engine", url: "/" }) }],
+  }),
+  component: HomePage,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function HomePage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="home-page">
+      <main className="home-main">
+        <AdSlot position="top" />
+        <section className="home-search" aria-labelledby="home-title">
+          <Brand link={false} />
+          <h1 id="home-title" className="sr-only">BharatKhoj</h1>
+          <p>India First Search Engine</p>
+          <SearchBox autoFocus />
+        </section>
+      </main>
+      <SiteFooter />
     </div>
   );
 }

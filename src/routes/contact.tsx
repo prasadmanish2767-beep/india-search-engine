@@ -1,0 +1,10 @@
+import { FormEvent, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Mail, MapPin } from "lucide-react";
+import { ContentLayout } from "@/components/bharatkhoj/ContentLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+const description = "Contact BharatKhoj with feedback, questions, partnership enquiries, or search quality reports.";
+export const Route = createFileRoute("/contact")({ head: () => ({ meta: [{ title: "Contact BharatKhoj" }, { name: "description", content: description }, { property: "og:title", content: "Contact BharatKhoj" }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { property: "og:url", content: "/contact" }, { name: "twitter:card", content: "summary" }], links: [{ rel: "canonical", href: "/contact" }] }), component: ContactPage });
+function ContactPage() { const [sent, setSent] = useState(false); const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (event.currentTarget.reportValidity()) setSent(true); }; return <ContentLayout title="Contact BharatKhoj" intro="Share feedback, report a search issue, or start a conversation."><div className="contact-grid"><aside><div><Mail /><span><strong>Email</strong><a href="mailto:support@bharatkhoj.in">support@bharatkhoj.in</a></span></div><div><MapPin /><span><strong>Location</strong><p>India</p></span></div></aside><form onSubmit={submit}><div className="form-grid"><label>Name<Input name="name" maxLength={100} required /></label><label>Email<Input type="email" name="email" maxLength={255} required /></label></div><label>Message<Textarea name="message" minLength={10} maxLength={1000} required rows={6} /></label><Button type="submit">Send message</Button>{sent && <p className="form-success" role="status">Thank you. Your message is ready for BharatKhoj support.</p>}</form></div></ContentLayout>; }
