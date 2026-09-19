@@ -1,0 +1,82 @@
+import type { SearchProvider, SearchResponse, SearchResult } from "./search.types";
+
+const cache = new Map<string, { expires: number; value: SearchResponse }>();
+const CACHE_TTL_MS = 60_000;
+
+function safeUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.toString() : null;
+  } catch { return null; }
+}
+function text(value: unknown, limit: number): string {
+  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, limit) : "";
+}
+function normalizeResult(value: unknown): SearchResult | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const url = safeUrl(raw.url);
+  const title = text(raw.title, 300);
+  if (!url || !title) return null;
+  const parsed = new URL(url);
+  const favicon = safeUrl(raw.favicon);
+  return {
+    title, url,
+    displayUrl: text(raw.displayUrl, 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
+    snippet: text(raw.snippet, 1_000),
+    ...(favicon ? { favicon } : {}),
+    ...(text(raw.publishedDate, 80) ? { publishedDate: text(raw.publishedDate, 80) } : {}),
+    ...(text(raw.source, 120) ? { source: text(raw.source, 120) } : {}),
+  };
+}
+
+const unconfiguredProvider: SearchProvider = {
+  async search() {
+    return { status: "unconfigured", results: [], relatedSearches: [], hasMore: false, message: "Search service is not configured yet" };
+  },
+  async suggestions() { return []; },
+};
+
+const endpointProvider: SearchProvider = {
+  async search(query, page, pageSize) {
+    const endpoint = process.env['SEARCH_PROVIDER_ENDPOINT'];
+    const apiKey = process.env['SEARCH_PROVIDER_API_KEY'];
+    if (!endpoint || !apiKey) return unconfiguredProvider.search(query, page, pageSize);
+    const target = new URL(endpoint);
+    target.searchParams.set("q", query); target.searchParams.set("page", String(page)); target.searchParams.set("pageSize", String(pageSize));
+    const response = await fetch(target, { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Search provider failed with status ${response.status}`);
+    const payload = await response.json() as Record<string, unknown>;
+    const rawResults = Array.isArray(payload.results) ? payload.results : [];
+    const related = Array.isArray(payload.relatedSearches) ? payload.relatedSearches.map((item) => text(item, 100)).filter(Boolean).slice(0, 8) : [];
+    const results = rawResults.map(normalizeResult).filter((item): item is SearchResult => item !== null);
+    return { status: "ok", results, relatedSearches: related, total: typeof payload.total === "number" ? payload.total : undefined, hasMore: payload.hasMore === true };
+  },
+  async suggestions(query, limit) {
+    const endpoint = process.env['SEARCH_SUGGESTIONS_ENDPOINT'];
+    const apiKey = process.env['SEARCH_PROVIDER_API_KEY'];
+    if (!endpoint || !apiKey) return [];
+    const target = new URL(endpoint); target.searchParams.set("q", query); target.searchParams.set("limit", String(limit));
+    const response = await fetch(target, { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Suggestion provider failed with status ${response.status}`);
+    const payload = await response.json() as { suggestions?: unknown[] };
+    return Array.isArray(payload.suggestions) ? payload.suggestions.map((item) => text(item, 100)).filter(Boolean).slice(0, limit) : [];
+  },
+};
+
+function getProvider(): SearchProvider {
+  return process.env['SEARCH_PROVIDER'] === "endpoint" ? endpointProvider : unconfiguredProvider;
+}
+
+export async function searchWeb(query: string, page: number, pageSize: number): Promise<SearchResponse> {
+  const key = `${query.toLocaleLowerCase()}:${page}:${pageSize}`;
+  const cached = cache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  const start = performance.now();
+  const result = await getProvider().search(query, page, pageSize);
+  const value: SearchResponse = { ...result, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
+  if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
+  return value;
+}
+export async function getSuggestions(query: string): Promise<string[]> { return getProvider().suggestions(query, 6); }
