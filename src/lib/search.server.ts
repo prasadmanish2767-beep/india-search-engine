@@ -16,18 +16,20 @@ function text(value: unknown, limit: number): string {
 function normalizeResult(value: unknown): SearchResult | null {
   if (!value || typeof value !== "object") return null;
   const raw = value as Record<string, unknown>;
-  const url = safeUrl(raw.url);
-  const title = text(raw.title, 300);
+  const url = safeUrl(raw['url']);
+  const title = text(raw['title'], 300);
   if (!url || !title) return null;
   const parsed = new URL(url);
-  const favicon = safeUrl(raw.favicon);
+  const favicon = safeUrl(raw['favicon']);
+  const publishedDate = text(raw['publishedDate'], 80);
+  const source = text(raw['source'], 120);
   return {
     title, url,
-    displayUrl: text(raw.displayUrl, 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
-    snippet: text(raw.snippet, 1_000),
+    displayUrl: text(raw['displayUrl'], 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
+    snippet: text(raw['snippet'], 1_000),
     ...(favicon ? { favicon } : {}),
-    ...(text(raw.publishedDate, 80) ? { publishedDate: text(raw.publishedDate, 80) } : {}),
-    ...(text(raw.source, 120) ? { source: text(raw.source, 120) } : {}),
+    ...(publishedDate ? { publishedDate } : {}),
+    ...(source ? { source } : {}),
   };
 }
 
