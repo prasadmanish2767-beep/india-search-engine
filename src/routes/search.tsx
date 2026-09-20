@@ -12,8 +12,9 @@ import type { SearchResponse } from "@/lib/search.types";
 const searchSchema = z.object({ q: z.string().catch(""), page: z.coerce.number().int().min(1).catch(1) });
 export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
-  head: ({ search }) => {
-    const q = typeof search.q === "string" ? search.q.trim().slice(0, 200) : "";
+  head: (ctx) => {
+    const search = (ctx as { search?: { q?: unknown } }).search;
+    const q = typeof search?.q === "string" ? search.q.trim().slice(0, 200) : "";
     const title = q ? `${q} — BharatKhoj Search` : "Search — BharatKhoj";
     const description = q ? `Search results for ${q} on BharatKhoj.` : "Search the web with BharatKhoj, India First Search Engine.";
     return { meta: [{ title }, { name: "description", content: description }, { property: "og:title", content: title }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { property: "og:url", content: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }, { name: "twitter:card", content: "summary" }, ...(q ? [{ name: "robots", content: "noindex,follow" }] : [])], links: [{ rel: "canonical", href: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }] };
