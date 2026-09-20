@@ -89,6 +89,18 @@ const firecrawlProvider: SearchProvider = {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error(`BharatKhoj search provider failed [${response.status}]: ${errorBody}`);
+      const outOfCredits =
+        response.status === 402 ||
+        (response.status === 403 && /credit limit reached/i.test(errorBody));
+      if (outOfCredits) {
+        return {
+          status: "exhausted",
+          results: [],
+          relatedSearches: [],
+          hasMore: false,
+          message: "Free search quota is exhausted",
+        };
+      }
       throw new Error(`Search provider failed with status ${response.status}`);
     }
     const payload = (await response.json()) as { data?: unknown; web?: unknown };
