@@ -48,6 +48,7 @@ function SearchPage() {
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
           {resultQuery.isError && <State icon={<WifiOff />} title="Search service unavailable" text={resultQuery.error.message} action={<Button onClick={() => resultQuery.refetch()}>Try again</Button>} />}
           {resultQuery.data?.status === "unconfigured" && <State icon={<AlertCircle />} title="Search service is not configured yet" text="BharatKhoj is ready to connect to a licensed web-search provider or its own index. No simulated results are shown." />}
+          {resultQuery.data?.status === "exhausted" && <State icon={<AlertCircle />} title="BharatKhoj search is temporarily unavailable" text="Our free search quota for this period has been used up. BharatKhoj runs on a free tier only, so please try again later — no fake or simulated results are shown." />}
           {resultQuery.data?.status === "ok" && (
             <>
               <p className="result-stats">{typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${resultQuery.data.results.length} results`} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
