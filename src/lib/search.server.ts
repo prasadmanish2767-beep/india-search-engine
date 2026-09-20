@@ -48,10 +48,12 @@ const endpointProvider: SearchProvider = {
     const response = await fetch(target, { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } });
     if (!response.ok) throw new Error(`Search provider failed with status ${response.status}`);
     const payload = await response.json() as Record<string, unknown>;
-    const rawResults = Array.isArray(payload.results) ? payload.results : [];
-    const related = Array.isArray(payload.relatedSearches) ? payload.relatedSearches.map((item) => text(item, 100)).filter(Boolean).slice(0, 8) : [];
+    const rawResults = Array.isArray(payload['results']) ? (payload['results'] as unknown[]) : [];
+    const rawRelated = payload['relatedSearches'];
+    const related = Array.isArray(rawRelated) ? rawRelated.map((item) => text(item, 100)).filter(Boolean).slice(0, 8) : [];
     const results = rawResults.map(normalizeResult).filter((item): item is SearchResult => item !== null);
-    return { status: "ok", results, relatedSearches: related, total: typeof payload.total === "number" ? payload.total : undefined, hasMore: payload.hasMore === true };
+    const total = payload['total'];
+    return { status: "ok", results, relatedSearches: related, ...(typeof total === "number" ? { total } : {}), hasMore: payload['hasMore'] === true };
   },
   async suggestions(query, limit) {
     const endpoint = process.env['SEARCH_SUGGESTIONS_ENDPOINT'];
@@ -103,10 +105,10 @@ const firecrawlProvider: SearchProvider = {
         if (!item || typeof item !== "object") return null;
         const raw = item as Record<string, unknown>;
         return normalizeResult({
-          title: raw.title,
-          url: raw.url,
-          snippet: raw.description ?? raw.snippet,
-          publishedDate: raw.date ?? raw.publishedDate,
+          title: raw['title'],
+          url: raw['url'],
+          snippet: raw['description'] ?? raw['snippet'],
+          publishedDate: raw['date'] ?? raw['publishedDate'],
         });
       })
       .filter((item): item is SearchResult => item !== null);
