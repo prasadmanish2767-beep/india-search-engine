@@ -8,7 +8,7 @@ export type SearchResult = {
   source?: string;
 };
 export type SearchResponse = {
-  status: "ok" | "unconfigured";
+  status: "ok" | "unconfigured" | "exhausted";
   query: string;
   results: SearchResult[];
   relatedSearches: string[];
