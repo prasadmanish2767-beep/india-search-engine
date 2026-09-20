@@ -28,8 +28,8 @@ function HomePage() {
         <AdSlot position="top" />
         <section className="home-search" aria-labelledby="home-title">
           <Brand link={false} />
-          <h1 id="home-title" className="sr-only">BharatKhoj</h1>
-          <p>India First Search Engine</p>
+          <h1 id="home-title" className="sr-only">BharatKhoj — India First Search Engine</h1>
+
           <SearchBox autoFocus />
         </section>
       </main>
