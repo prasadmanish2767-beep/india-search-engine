@@ -65,8 +65,63 @@ const endpointProvider: SearchProvider = {
   },
 };
 
+const GATEWAY_SEARCH_URL = "https://connector-gateway.lovable.dev/firecrawl/v2/search";
+
+const firecrawlProvider: SearchProvider = {
+  async search(query, page, pageSize) {
+    const lovableKey = process.env['LOVABLE_API_KEY'];
+    const connectionKey = process.env['FIRECRAWL_API_KEY'];
+    if (!lovableKey || !connectionKey) return unconfiguredProvider.search(query, page, pageSize);
+    const limit = Math.min(pageSize * page, 50);
+    const response = await fetch(GATEWAY_SEARCH_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": connectionKey,
+      },
+      body: JSON.stringify({ query, limit, lang: "en", country: "in" }),
+    });
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`BharatKhoj search provider failed [${response.status}]: ${errorBody}`);
+      throw new Error(`Search provider failed with status ${response.status}`);
+    }
+    const payload = (await response.json()) as { data?: unknown; web?: unknown };
+    const container = payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)
+      ? (payload.data as { web?: unknown })
+      : undefined;
+    const rawList = Array.isArray(payload.data)
+      ? payload.data
+      : Array.isArray(container?.web)
+        ? (container.web as unknown[])
+        : Array.isArray(payload.web)
+          ? (payload.web as unknown[])
+          : [];
+    const all = rawList
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const raw = item as Record<string, unknown>;
+        return normalizeResult({
+          title: raw.title,
+          url: raw.url,
+          snippet: raw.description ?? raw.snippet,
+          publishedDate: raw.date ?? raw.publishedDate,
+        });
+      })
+      .filter((item): item is SearchResult => item !== null);
+    const start = (page - 1) * pageSize;
+    const results = all.slice(start, start + pageSize);
+    return { status: "ok", results, relatedSearches: [], hasMore: all.length > start + pageSize };
+  },
+  async suggestions() { return []; },
+};
+
 function getProvider(): SearchProvider {
-  return process.env['SEARCH_PROVIDER'] === "endpoint" ? endpointProvider : unconfiguredProvider;
+  const configured = process.env['SEARCH_PROVIDER'];
+  if (configured === "endpoint") return endpointProvider;
+  if (configured === "none") return unconfiguredProvider;
+  return firecrawlProvider;
 }
 
 export async function searchWeb(query: string, page: number, pageSize: number): Promise<SearchResponse> {
