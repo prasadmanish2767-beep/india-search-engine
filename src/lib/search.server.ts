@@ -1,7 +1,9 @@
 import type { SearchProvider, SearchResponse, SearchResult } from "./search.types";
 
 const cache = new Map<string, { expires: number; value: SearchResponse }>();
+const inflight = new Map<string, Promise<SearchResponse>>();
 const CACHE_TTL_MS = 60_000;
+const EXHAUSTED_TTL_MS = 5 * 60_000;
 
 function safeUrl(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -140,14 +142,27 @@ function getProvider(): SearchProvider {
   return firecrawlProvider;
 }
 
-export async function searchWeb(query: string, page: number, pageSize: number): Promise<SearchResponse> {
+export async function searchWeb(query: string, page: number, pageSize: number, fresh = false): Promise<SearchResponse> {
   const key = `${query.toLocaleLowerCase()}:${page}:${pageSize}`;
-  const cached = cache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.value;
+  if (!fresh) {
+    const cached = cache.get(key);
+    if (cached && cached.expires > Date.now()) return cached.value;
+  }
+  const pending = inflight.get(key);
+  if (pending && !fresh) return pending;
   const start = performance.now();
-  const result = await getProvider().search(query, page, pageSize);
-  const value: SearchResponse = { ...result, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
-  if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
-  return value;
+  const task = (async () => {
+    try {
+      const result = await getProvider().search(query, page, pageSize);
+      const value: SearchResponse = { ...result, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
+      if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
+      else if (value.status === "exhausted") cache.set(key, { expires: Date.now() + EXHAUSTED_TTL_MS, value });
+      return value;
+    } finally {
+      inflight.delete(key);
+    }
+  })();
+  inflight.set(key, task);
+  return task;
 }
 export async function getSuggestions(query: string): Promise<string[]> { return getProvider().suggestions(query, 6); }
