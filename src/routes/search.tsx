@@ -22,8 +22,8 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
-async function fetchResults(query: string, page: number): Promise<SearchResponse> {
-  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=10`);
+async function fetchResults(query: string, page: number, fresh: boolean): Promise<SearchResponse> {
+  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=10${fresh ? "&fresh=1" : ""}`);
   const payload = await response.json() as SearchResponse & { message?: string };
   if (!response.ok) throw new Error(payload.message || (response.status === 429 ? "Too many searches. Please try again shortly." : "Search is temporarily unavailable."));
   return payload;
@@ -31,7 +31,9 @@ async function fetchResults(query: string, page: number): Promise<SearchResponse
 function SearchPage() {
   const { q, page } = Route.useSearch();
   const query = q.trim().slice(0, 200);
-  const resultQuery = useQuery({ queryKey: ["search", query, page], queryFn: () => fetchResults(query, page), enabled: query.length > 0, staleTime: 30_000, retry: 1 });
+  const freshRef = React.useRef(false);
+  const resultQuery = useQuery({ queryKey: ["search", query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
+  const checkAgain = () => { freshRef.current = true; resultQuery.refetch(); };
   return (
     <div className="results-page">
       <header className="results-header">
