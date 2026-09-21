@@ -32,7 +32,7 @@ async function fetchResults(query: string, page: number, fresh: boolean): Promis
 function SearchPage() {
   const { q, page } = Route.useSearch();
   const query = q.trim().slice(0, 200);
-  const freshRef = React.useRef(false);
+  const freshRef = useRef(false);
   const resultQuery = useQuery({ queryKey: ["search", query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
   const checkAgain = () => { freshRef.current = true; resultQuery.refetch(); };
   return (
