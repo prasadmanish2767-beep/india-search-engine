@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, ExternalLink, LoaderCircle, SearchX, Settings2, WifiOff } from "lucide-react";
@@ -48,9 +49,9 @@ function SearchPage() {
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
-          {resultQuery.isError && <State icon={<WifiOff />} title="Search service unavailable" text={resultQuery.error.message} action={<Button onClick={() => resultQuery.refetch()}>Try again</Button>} />}
+          {resultQuery.isError && <State icon={<WifiOff />} title="Search service unavailable" text={resultQuery.error.message} action={<Button onClick={checkAgain}>Try again</Button>} />}
           {resultQuery.data?.status === "unconfigured" && <State icon={<AlertCircle />} title="Search service is not configured yet" text="BharatKhoj is ready to connect to a licensed web-search provider or its own index. No simulated results are shown." />}
-          {resultQuery.data?.status === "exhausted" && <State icon={<AlertCircle />} title="BharatKhoj search is temporarily unavailable" text="Our free search quota for this period has been used up. BharatKhoj runs on a free tier only — no fake or simulated results are shown. Once the free quota resets, use the button below to fetch real results." action={<Button onClick={() => resultQuery.refetch()} disabled={resultQuery.isFetching}>{resultQuery.isFetching ? "Checking…" : "Check again for real results"}</Button>} />}
+          {resultQuery.data?.status === "exhausted" && <State icon={<AlertCircle />} title="BharatKhoj search is temporarily unavailable" text="Our free search quota for this period has been used up. BharatKhoj runs on a free tier only — no fake or simulated results are shown. Once the free quota resets, use the button below to fetch real results." action={<Button onClick={checkAgain} disabled={resultQuery.isFetching}>{resultQuery.isFetching ? "Checking…" : "Check again for real results"}</Button>} />}
           {resultQuery.data?.status === "ok" && (
             <>
               <p className="result-stats">{typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${resultQuery.data.results.length} results`} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
