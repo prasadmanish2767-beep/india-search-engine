@@ -79,16 +79,18 @@ function SearchPage() {
           {resultQuery.data?.status === "exhausted" && <State icon={<AlertCircle />} title="BharatKhoj search is temporarily unavailable" text="Our free search quota for this period has been used up. BharatKhoj runs on a free tier only — no fake or simulated results are shown. Once the free quota resets, use the button below to fetch real results." action={<Button onClick={checkAgain} disabled={resultQuery.isFetching}>{resultQuery.isFetching ? "Checking…" : "Check again for real results"}</Button>} />}
           {resultQuery.data?.status === "ok" && (
             <>
-              <p className="result-stats">{typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${resultQuery.data.results.length} results`} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
-              {resultQuery.data.results.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : (
-                <ol className="result-list">{resultQuery.data.results.map((result) => <li key={result.url}>
+              <p className="result-stats">{filtersActive ? `Showing ${visibleResults.length} of ${allResults.length} results after filters` : (typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${allResults.length} results`)} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
+              {allResults.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : visibleResults.length === 0 ? (
+                <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
+              ) : (
+                <ol className="result-list">{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source">{result.favicon && <img src={result.favicon} alt="" loading="lazy" referrerPolicy="no-referrer" />}<span>{result.source || result.displayUrl}</span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}<ExternalLink aria-hidden="true" /></h2></a>
                   <p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}
                 </li>)}</ol>
               )}
-              {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (resultQuery.data.results.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={{ q: item, page: 1 }}>{item}</Link>)}</div></section> : null; })()}
-              {resultQuery.data.results.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={{ q: query, page: page - 1 }}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={{ q: query, page: page + 1 }}>Next</Link></Button></nav>}
+              {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (allResults.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={(prev) => ({ ...prev, q: item, page: 1 })}>{item}</Link>)}</div></section> : null; })()}
+              {visibleResults.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page - 1 })}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page + 1 })}>Next</Link></Button></nav>}
             </>
           )}
         </section>
