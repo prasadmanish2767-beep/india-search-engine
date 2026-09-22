@@ -101,7 +101,7 @@ export function SearchBox({ initialQuery = "", compact = false, autoFocus = fals
           onKeyDown={(event) => {
             if (event.key === "ArrowDown" && items.length) { event.preventDefault(); setOpen(true); setActive((current) => Math.min(current + 1, items.length - 1)); }
             if (event.key === "ArrowUp" && items.length) { event.preventDefault(); setActive((current) => Math.max(current - 1, -1)); }
-            if (event.key === "Enter" && active >= 0) { event.preventDefault(); submit(items[active].text); }
+            if (event.key === "Enter" && active >= 0) { const picked = items[active]; if (picked) { event.preventDefault(); submit(picked.text); } }
             if (event.key === "Escape") { setOpen(false); setActive(-1); }
           }}
           placeholder="Search BharatKhoj"
