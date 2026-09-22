@@ -38,11 +38,20 @@ async function fetchResults(query: string, page: number, fresh: boolean): Promis
   return payload;
 }
 function SearchPage() {
-  const { q, page } = Route.useSearch();
+  const { q, page, time, lang, type } = Route.useSearch();
+  const navigate = useNavigate({ from: "/search" });
   const query = q.trim().slice(0, 200);
   const freshRef = useRef(false);
   const resultQuery = useQuery({ queryKey: ["search", query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
   const checkAgain = () => { freshRef.current = true; resultQuery.refetch(); };
+  const timeFilter = (TIME_OPTIONS.some((o) => o.value === time) ? time : "any") as TimeFilter;
+  const langFilter = (LANG_OPTIONS.some((o) => o.value === lang) ? lang : "any") as LangFilter;
+  const typeFilter = (TYPE_OPTIONS.some((o) => o.value === type) ? type : "all") as TypeFilter;
+  const filtersActive = timeFilter !== "any" || langFilter !== "any" || typeFilter !== "all";
+  const allResults = resultQuery.data?.status === "ok" ? resultQuery.data.results : [];
+  const visibleResults = useMemo(() => applyFilters(allResults, { time: timeFilter, lang: langFilter, type: typeFilter }), [allResults, timeFilter, langFilter, typeFilter]);
+  const setFilter = (patch: Partial<{ time: string; lang: string; type: string }>) => { void navigate({ search: (prev) => ({ ...prev, ...patch }) }); };
+  const clearFilters = () => setFilter({ time: "any", lang: "any", type: "all" });
   return (
     <div className="results-page">
       <header className="results-header">
