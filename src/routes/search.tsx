@@ -8,6 +8,7 @@ import { Brand } from "@/components/bharatkhoj/Brand";
 import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 import { Button } from "@/components/ui/button";
+import { buildRelated } from "@/lib/suggest";
 import type { SearchResponse } from "@/lib/search.types";
 
 const searchSchema = z.object({ q: z.string().catch(""), page: z.coerce.number().int().min(1).catch(1) });
@@ -62,7 +63,7 @@ function SearchPage() {
                   <p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}
                 </li>)}</ol>
               )}
-              {resultQuery.data.relatedSearches.length > 0 && <section className="related"><h2>Related searches</h2><div>{resultQuery.data.relatedSearches.map((item) => <Link key={item} to="/search" search={{ q: item, page: 1 }}>{item}</Link>)}</div></section>}
+              {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (resultQuery.data.results.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={{ q: item, page: 1 }}>{item}</Link>)}</div></section> : null; })()}
               {resultQuery.data.results.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={{ q: query, page: page - 1 }}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={{ q: query, page: page + 1 }}>Next</Link></Button></nav>}
             </>
           )}

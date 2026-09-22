@@ -191,6 +191,24 @@
   .suggestions button { width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: .8rem; padding: .7rem .8rem; text-align: left; color: var(--foreground); border-radius: calc(var(--radius) - 2px); cursor: pointer; }
   .suggestions button:hover, .suggestions [aria-selected="true"] button { background: var(--muted); }
   .suggestions svg { width: 1rem; color: var(--muted-foreground); }
+  .suggestions { animation: bk-fade-down .16s ease-out; max-height: 60vh; overflow-y: auto; }
+  .suggestions li { display: flex; align-items: center; gap: .25rem; }
+  .suggestions li > button:first-child { flex: 1; min-width: 0; }
+  .suggestions li > button:first-child span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .suggestions strong { font-weight: 700; color: var(--brand-orange); }
+  .suggestion-remove { width: auto; flex: 0 0 auto; padding: .45rem; color: var(--muted-foreground); }
+  .suggestion-remove svg { width: .85rem; }
+  .result-list li { animation: bk-fade-up .28s ease-out both; }
+  .result-list li:nth-child(1) { animation-delay: .02s; }
+  .result-list li:nth-child(2) { animation-delay: .06s; }
+  .result-list li:nth-child(3) { animation-delay: .1s; }
+  .result-list li:nth-child(4) { animation-delay: .14s; }
+  .result-list li:nth-child(5) { animation-delay: .18s; }
+  .result-list li:nth-child(n+6) { animation-delay: .22s; }
+  .related a { transition: background-color .18s ease, transform .18s ease, color .18s ease; }
+  .related a:hover { background: color-mix(in oklab, var(--brand-orange) 14%, var(--muted)); transform: translateY(-1px); }
+  @keyframes bk-fade-down { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @keyframes bk-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .site-header, .results-header { position: relative; background: var(--background); border-bottom: 1px solid var(--border); }
   .site-header-inner { height: 4.5rem; max-width: 75rem; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
   .desktop-nav { display: flex; align-items: center; gap: 1.5rem; font-size: .82rem; color: var(--muted-foreground); }
