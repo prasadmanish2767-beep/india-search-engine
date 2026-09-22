@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useRef } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, ExternalLink, LoaderCircle, SearchX, Settings2, WifiOff } from "lucide-react";
 import { z } from "zod";
@@ -9,9 +9,16 @@ import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 import { Button } from "@/components/ui/button";
 import { buildRelated } from "@/lib/suggest";
+import { applyFilters, LANG_OPTIONS, TIME_OPTIONS, TYPE_OPTIONS, type LangFilter, type TimeFilter, type TypeFilter } from "@/lib/filters";
 import type { SearchResponse } from "@/lib/search.types";
 
-const searchSchema = z.object({ q: z.string().catch(""), page: z.coerce.number().int().min(1).catch(1) });
+const searchSchema = z.object({
+  q: z.string().catch(""),
+  page: z.coerce.number().int().min(1).catch(1),
+  time: z.string().catch("any"),
+  lang: z.string().catch("any"),
+  type: z.string().catch("all"),
+});
 export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
   head: (ctx) => {
