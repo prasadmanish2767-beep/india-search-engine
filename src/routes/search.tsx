@@ -8,6 +8,7 @@ import { Brand } from "@/components/bharatkhoj/Brand";
 import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 import { Button } from "@/components/ui/button";
+import { buildRelated } from "@/lib/suggest";
 import type { SearchResponse } from "@/lib/search.types";
 
 const searchSchema = z.object({ q: z.string().catch(""), page: z.coerce.number().int().min(1).catch(1) });
