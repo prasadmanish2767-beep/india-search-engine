@@ -61,6 +61,14 @@ function SearchPage() {
           <Button variant="ghost" size="icon" asChild><Link to="/settings" aria-label="Search settings"><Settings2 /></Link></Button>
         </div>
         <nav className="result-tabs" aria-label="Search categories"><span className="active">All</span><span>Images</span><span>News</span><span>Videos</span></nav>
+        {resultQuery.data?.status === "ok" && allResults.length > 0 && (
+          <div className="result-filters" role="group" aria-label="Refine results">
+            <FilterSelect label="Time" value={timeFilter} options={TIME_OPTIONS} onChange={(value) => setFilter({ time: value })} />
+            <FilterSelect label="Language" value={langFilter} options={LANG_OPTIONS} onChange={(value) => setFilter({ lang: value })} />
+            <FilterSelect label="Result type" value={typeFilter} options={TYPE_OPTIONS} onChange={(value) => setFilter({ type: value })} />
+            {filtersActive && <button type="button" className="filter-clear" onClick={clearFilters}>Clear filters</button>}
+          </div>
+        )}
       </header>
       <main className="results-main">
         <section className="results-column" aria-live="polite">
