@@ -13,7 +13,18 @@ function safeUrl(value: unknown): string | null {
   } catch { return null; }
 }
 function text(value: unknown, limit: number): string {
-  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, limit) : "";
+  if (typeof value !== "string") return "";
+  const clean = value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[\[[^\]]*\]\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[[a-z0-9]{1,3}\]/gi, " ")
+    .replace(/[*_`#>|]+/g, " ")
+    .replace(/-{2,}/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return clean.length > limit ? clean.slice(0, limit).replace(/\s\S*$/, "") + "…" : clean;
 }
 function normalizeResult(value: unknown): SearchResult | null {
   if (!value || typeof value !== "object") return null;
