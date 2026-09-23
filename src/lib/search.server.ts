@@ -52,8 +52,8 @@ function normalizeResult(value: unknown): SearchResult | null {
   return {
     title, url,
     displayUrl: text(raw['displayUrl'], 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
-    snippet: text(raw['snippet'], 1_000),
-    ...(favicon ? { favicon } : {}),
+    snippet: text(raw['snippet'], 320),
+    favicon: favicon ?? `${parsed.origin}/favicon.ico`,
     ...(publishedDate ? { publishedDate } : {}),
     ...(source ? { source } : {}),
   };
