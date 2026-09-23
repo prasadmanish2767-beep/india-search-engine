@@ -15,6 +15,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ApiAnswerRouteImport } from './routes/api/answer'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as ApiSuggestionsRouteImport } from './routes/api/suggestions'
 
@@ -48,6 +49,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAnswerRoute = ApiAnswerRouteImport.update({
+  id: '/api/answer',
+  path: '/api/answer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSearchRoute = ApiSearchRouteImport.update({
   id: '/api/search',
   path: '/api/search',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/settings'
+    | '/api/answer'
     | '/api/search'
     | '/api/suggestions'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/settings'
+    | '/api/answer'
     | '/api/search'
     | '/api/suggestions'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/settings'
+    | '/api/answer'
     | '/api/search'
     | '/api/suggestions'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
+  ApiAnswerRoute: typeof ApiAnswerRoute
   ApiSearchRoute: typeof ApiSearchRoute
   ApiSuggestionsRoute: typeof ApiSuggestionsRoute
 }
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/answer': {
+      id: '/api/answer'
+      path: '/api/answer'
+      fullPath: '/api/answer'
+      preLoaderRoute: typeof ApiAnswerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/search': {
       id: '/api/search'
       path: '/api/search'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
+  ApiAnswerRoute: ApiAnswerRoute,
   ApiSearchRoute: ApiSearchRoute,
   ApiSuggestionsRoute: ApiSuggestionsRoute,
 }
