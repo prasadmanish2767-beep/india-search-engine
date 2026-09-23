@@ -316,3 +316,25 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* --- Search result filters --- */
+.result-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.filter-select select {
+  appearance: none;
+  font: inherit; font-size: 13px; color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 30px 6px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23607D8B' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.filter-select select:hover { border-color: var(--brand-orange); }
+.filter-select select:focus-visible { outline: none; border-color: var(--brand-orange); box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-orange) 18%, transparent); }
+.filter-clear {
+  font: inherit; font-size: 13px; color: var(--brand-orange);
+  background: none; border: none; padding: 6px 8px; cursor: pointer; border-radius: 8px;
+}
+.filter-clear:hover { text-decoration: underline; }
+@media (max-width: 760px) { .result-filters { gap: 6px; } .filter-select select { font-size: 12px; padding: 5px 26px 5px 10px; } }
+@media (prefers-reduced-motion: reduce) { .filter-select select { transition: none; } }
