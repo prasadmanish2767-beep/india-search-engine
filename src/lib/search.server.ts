@@ -27,14 +27,16 @@ export function text(value: unknown, limit: number): string {
     .replace(/\\(["'\\/])/g, "$1")
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]*>/g, " ")
-    .replace(/https?:\/\/\S+/g, " ")
     .replace(/[\u0000-\u001f\u200b-\u200d\ufeff]/g, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[\[[^\]]*\]\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[[a-z0-9]{1,3}\]/gi, " ")
     .replace(/[*_`#>|]+/g, " ")
+    .replace(/!?\[[^\]]*\]\(\S*/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
     .replace(/-{2,}/g, " ")
+    .replace(/(\s[-–]){2,}/g, " ")
     .replace(/\s+/g, " ")
     .trim();
   return clean.length > limit ? clean.slice(0, limit).replace(/\s\S*$/, "") + "…" : clean;
