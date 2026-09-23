@@ -1,4 +1,29 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { SearchResult } from "@/lib/search.types";
+
+function SiteIcon({ src, label }: { src?: string | undefined; label: string }) {
+  const [failed, setFailed] = useState(false);
+  const letter = (label.replace(/^www\./, "")[0] ?? "?").toUpperCase();
+  if (!src || failed) return <span className="site-icon-fallback" aria-hidden="true">{letter}</span>;
+  return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" width={18} height={18} onError={() => setFailed(true)} />;
+}
+
+function AnswerBox({ query, results }: { query: string; results: SearchResult[] }) {
+  const sources = results.slice(0, 5).map((r) => ({ title: r.title.slice(0, 300), snippet: r.snippet.slice(0, 400) }));
+  const answer = useQuery({
+    queryKey: ["answer", query.toLowerCase()],
+    enabled: sources.length > 0 && query.length > 1,
+    staleTime: Infinity, retry: 0,
+    queryFn: async () => {
+      const res = await fetch("/api/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ q: query, sources }) });
+      if (!res.ok) return "";
+      return ((await res.json()) as { answer?: string }).answer ?? "";
+    },
+  });
+  if (answer.isLoading) return <div className="answer-box answer-loading" aria-busy="true"><span /><span /></div>;
+  if (!answer.data) return null;
+  return <section className="answer-box" aria-label="Quick answer"><p className="answer-label">BharatKhoj Answer</p><p className="answer-text">{answer.data}</p></section>;
+}
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, ExternalLink, LoaderCircle, SearchX, Settings2, WifiOff } from "lucide-react";
@@ -83,11 +108,12 @@ function SearchPage() {
               {allResults.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : visibleResults.length === 0 ? (
                 <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
+                <>{page === 1 && !filtersActive && <AnswerBox query={query} results={allResults} />}
                 <ol className="result-list">{visibleResults.map((result) => <li key={result.url}>
-                  <div className="result-source">{result.favicon && <img src={result.favicon} alt="" loading="lazy" referrerPolicy="no-referrer" />}<span>{result.source || result.displayUrl}</span></div>
+                  <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span>{result.source || result.displayUrl}</span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}<ExternalLink aria-hidden="true" /></h2></a>
                   <p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}
-                </li>)}</ol>
+                </li>)}</ol></>
               )}
               {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (allResults.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={(prev) => ({ ...prev, q: item, page: 1 })}>{item}</Link>)}</div></section> : null; })()}
               {visibleResults.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page - 1 })}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page + 1 })}>Next</Link></Button></nav>}

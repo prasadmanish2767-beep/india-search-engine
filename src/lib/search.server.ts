@@ -12,16 +12,31 @@ function safeUrl(value: unknown): string | null {
     return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.toString() : null;
   } catch { return null; }
 }
-function text(value: unknown, limit: number): string {
+const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "–", mdash: "—", hellip: "…", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“" };
+function decodeEntities(s: string): string {
+  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
+    if (e[0] === "#") { const n = e[1]?.toLowerCase() === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10); return Number.isFinite(n) && n > 31 ? String.fromCodePoint(n) : " "; }
+    return ENTITIES[e.toLowerCase()] ?? m;
+  });
+}
+export function text(value: unknown, limit: number): string {
   if (typeof value !== "string") return "";
-  const clean = value
+  const clean = decodeEntities(value)
+    .replace(/\\u([0-9a-f]{4})/gi, (_, h: string) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/\\[nrt]/g, " ")
+    .replace(/\\(["'\\/])/g, "$1")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]*>/g, " ")
+    .replace(/[\u0000-\u001f\u200b-\u200d\ufeff]/g, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[\[[^\]]*\]\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[[a-z0-9]{1,3}\]/gi, " ")
     .replace(/[*_`#>|]+/g, " ")
+    .replace(/!?\[[^\]]*\]\(\S*/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
     .replace(/-{2,}/g, " ")
+    .replace(/(\s[-–]){2,}/g, " ")
     .replace(/\s+/g, " ")
     .trim();
   return clean.length > limit ? clean.slice(0, limit).replace(/\s\S*$/, "") + "…" : clean;
@@ -39,8 +54,8 @@ function normalizeResult(value: unknown): SearchResult | null {
   return {
     title, url,
     displayUrl: text(raw['displayUrl'], 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
-    snippet: text(raw['snippet'], 1_000),
-    ...(favicon ? { favicon } : {}),
+    snippet: text(raw['snippet'], 320),
+    favicon: favicon ?? `${parsed.origin}/favicon.ico`,
     ...(publishedDate ? { publishedDate } : {}),
     ...(source ? { source } : {}),
   };
