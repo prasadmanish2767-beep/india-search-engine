@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { SearchResult } from "@/lib/search.types";
 
-function SiteIcon({ src, label }: { src?: string; label: string }) {
+function SiteIcon({ src, label }: { src?: string | undefined; label: string }) {
   const [failed, setFailed] = useState(false);
   const letter = (label.replace(/^www\./, "")[0] ?? "?").toUpperCase();
   if (!src || failed) return <span className="site-icon-fallback" aria-hidden="true">{letter}</span>;
