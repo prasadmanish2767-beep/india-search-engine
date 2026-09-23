@@ -101,3 +101,14 @@ function SearchPage() {
   );
 }
 function State({ icon, title, text, action }: { icon: React.ReactNode; title: string; text: string; action?: React.ReactNode }) { return <div className="result-state">{icon}<h2>{title}</h2><p>{text}</p>{action}</div>; }
+
+function FilterSelect<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
+  return (
+    <label className="filter-select">
+      <span className="sr-only">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value as T)} aria-label={label}>
+        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
+  );
+}
