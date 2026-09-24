@@ -1,4 +1,4 @@
-import type { SearchProvider, SearchResponse, SearchResult } from "./search.types";
+import type { SearchProvider, SearchResponse, SearchResult, Vertical } from "./search.types";
 
 const cache = new Map<string, { expires: number; value: SearchResponse }>();
 const inflight = new Map<string, Promise<SearchResponse>>();
@@ -51,7 +51,12 @@ function normalizeResult(value: unknown): SearchResult | null {
   const favicon = safeUrl(raw['favicon']);
   const publishedDate = text(raw['publishedDate'], 80);
   const source = text(raw['source'], 120);
+  const image = safeUrl(raw['image']);
+  const thumbnail = safeUrl(raw['thumbnail']);
   return {
+    ...(image ? { image } : {}),
+    ...(thumbnail ? { thumbnail } : {}),
+    ...(raw['debug'] ? { raw: { title: typeof raw['title'] === "string" ? raw['title'].slice(0, 600) : "", snippet: typeof raw['snippet'] === "string" ? raw['snippet'].slice(0, 1200) : "" } } : {}),
     title, url,
     displayUrl: text(raw['displayUrl'], 300) || `${parsed.hostname}${parsed.pathname === "/" ? "" : parsed.pathname}`,
     snippet: text(raw['snippet'], 320),
@@ -72,7 +77,7 @@ const endpointProvider: SearchProvider = {
   async search(query, page, pageSize) {
     const endpoint = process.env['SEARCH_PROVIDER_ENDPOINT'];
     const apiKey = process.env['SEARCH_PROVIDER_API_KEY'];
-    if (!endpoint || !apiKey) return unconfiguredProvider.search(query, page, pageSize);
+    if (!endpoint || !apiKey) return unconfiguredProvider.search(query, page, pageSize, "web", false);
     const target = new URL(endpoint);
     target.searchParams.set("q", query); target.searchParams.set("page", String(page)); target.searchParams.set("pageSize", String(pageSize));
     const response = await fetch(target, { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } });
@@ -100,10 +105,10 @@ const endpointProvider: SearchProvider = {
 const GATEWAY_SEARCH_URL = "https://connector-gateway.lovable.dev/firecrawl/v2/search";
 
 const firecrawlProvider: SearchProvider = {
-  async search(query, page, pageSize) {
+  async search(query, page, pageSize, vertical, debug) {
     const lovableKey = process.env['LOVABLE_API_KEY'];
     const connectionKey = process.env['FIRECRAWL_API_KEY'];
-    if (!lovableKey || !connectionKey) return unconfiguredProvider.search(query, page, pageSize);
+    if (!lovableKey || !connectionKey) return unconfiguredProvider.search(query, page, pageSize, vertical, debug);
     const limit = Math.min(pageSize * page, 50);
     const response = await fetch(GATEWAY_SEARCH_URL, {
       method: "POST",
@@ -112,7 +117,11 @@ const firecrawlProvider: SearchProvider = {
         Authorization: `Bearer ${lovableKey}`,
         "X-Connection-Api-Key": connectionKey,
       },
-      body: JSON.stringify({ query, limit, lang: "en", country: "in" }),
+      body: JSON.stringify({
+        query: vertical === "videos" ? `${query} (site:youtube.com OR site:vimeo.com OR site:dailymotion.com)` : query,
+        limit, lang: "en", country: "in",
+        sources: [{ type: vertical === "images" ? "images" : vertical === "news" ? "news" : "web" }],
+      }),
     });
     if (!response.ok) {
       const errorBody = await response.text();
@@ -131,26 +140,28 @@ const firecrawlProvider: SearchProvider = {
       }
       throw new Error(`Search provider failed with status ${response.status}`);
     }
-    const payload = (await response.json()) as { data?: unknown; web?: unknown };
-    const container = payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)
-      ? (payload.data as { web?: unknown })
-      : undefined;
-    const rawList = Array.isArray(payload.data)
-      ? payload.data
-      : Array.isArray(container?.web)
-        ? (container.web as unknown[])
-        : Array.isArray(payload.web)
-          ? (payload.web as unknown[])
-          : [];
+    const payload = (await response.json()) as Record<string, unknown>;
+    const bucket = vertical === "images" ? "images" : vertical === "news" ? "news" : "web";
+    const container = payload['data'] && typeof payload['data'] === "object" && !Array.isArray(payload['data'])
+      ? (payload['data'] as Record<string, unknown>)
+      : payload;
+    const rawList = Array.isArray(payload['data'])
+      ? (payload['data'] as unknown[])
+      : Array.isArray(container[bucket]) ? (container[bucket] as unknown[]) : [];
     const all = rawList
       .map((item) => {
         if (!item || typeof item !== "object") return null;
         const raw = item as Record<string, unknown>;
+        const url = typeof raw['url'] === "string" ? raw['url'] : "";
+        const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/);
         return normalizeResult({
           title: raw['title'],
-          url: raw['url'],
+          url,
           snippet: raw['description'] ?? raw['snippet'],
           publishedDate: raw['date'] ?? raw['publishedDate'],
+          image: raw['imageUrl'],
+          thumbnail: yt ? `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg` : raw['imageUrl'],
+          debug,
         });
       })
       .filter((item): item is SearchResult => item !== null);
@@ -168,8 +179,8 @@ function getProvider(): SearchProvider {
   return firecrawlProvider;
 }
 
-export async function searchWeb(query: string, page: number, pageSize: number, fresh = false): Promise<SearchResponse> {
-  const key = `${query.toLocaleLowerCase()}:${page}:${pageSize}`;
+export async function searchWeb(query: string, page: number, pageSize: number, fresh = false, vertical: Vertical = "web", debug = false): Promise<SearchResponse> {
+  const key = `${vertical}:${debug ? 1 : 0}:${query.toLocaleLowerCase()}:${page}:${pageSize}`;
   if (!fresh) {
     const cached = cache.get(key);
     if (cached && cached.expires > Date.now()) return cached.value;
@@ -179,7 +190,7 @@ export async function searchWeb(query: string, page: number, pageSize: number, f
   const start = performance.now();
   const task = (async () => {
     try {
-      const result = await getProvider().search(query, page, pageSize);
+      const result = await getProvider().search(query, page, pageSize, vertical, debug);
       const value: SearchResponse = { ...result, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
       if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
       else if (value.status === "exhausted") cache.set(key, { expires: Date.now() + EXHAUSTED_TTL_MS, value });
