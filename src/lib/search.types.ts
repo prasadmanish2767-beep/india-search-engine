@@ -6,7 +6,11 @@ export type SearchResult = {
   favicon?: string;
   publishedDate?: string;
   source?: string;
+  image?: string;
+  thumbnail?: string;
+  raw?: { title: string; snippet: string };
 };
+export type Vertical = "web" | "images" | "news" | "videos";
 export type SearchResponse = {
   status: "ok" | "unconfigured" | "exhausted";
   query: string;
@@ -19,6 +23,6 @@ export type SearchResponse = {
   message?: string;
 };
 export type SearchProvider = {
-  search: (query: string, page: number, pageSize: number) => Promise<Omit<SearchResponse, "query" | "elapsedMs" | "page">>;
+  search: (query: string, page: number, pageSize: number, vertical: Vertical, debug: boolean) => Promise<Omit<SearchResponse, "query" | "elapsedMs" | "page">>;
   suggestions: (query: string, limit: number) => Promise<string[]>;
 };

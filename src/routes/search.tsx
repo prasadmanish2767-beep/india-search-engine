@@ -43,6 +43,7 @@ const searchSchema = z.object({
   time: z.string().catch("any"),
   lang: z.string().catch("any"),
   type: z.string().catch("all"),
+  tab: z.enum(["all", "images", "news", "videos"]).catch("all"),
 });
 export const Route = createFileRoute("/search")({
   validateSearch: searchSchema,
@@ -56,23 +57,27 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
-async function fetchResults(query: string, page: number, fresh: boolean): Promise<SearchResponse> {
-  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=10${fresh ? "&fresh=1" : ""}`);
+const TABS = [{ id: "all", label: "All", vertical: "web" }, { id: "images", label: "Images", vertical: "images" }, { id: "news", label: "News", vertical: "news" }, { id: "videos", label: "Videos", vertical: "videos" }] as const;
+type TabId = (typeof TABS)[number]["id"];
+
+async function fetchResults(query: string, page: number, fresh: boolean, tab: TabId): Promise<SearchResponse> {
+  const vertical = TABS.find((t) => t.id === tab)?.vertical ?? "web";
+  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&pageSize=${tab === "images" ? 20 : 10}&vertical=${vertical}${fresh ? "&fresh=1" : ""}`);
   const payload = await response.json() as SearchResponse & { message?: string };
   if (!response.ok) throw new Error(payload.message || (response.status === 429 ? "Too many searches. Please try again shortly." : "Search is temporarily unavailable."));
   return payload;
 }
 function SearchPage() {
-  const { q, page, time, lang, type } = Route.useSearch();
+  const { q, page, time, lang, type, tab } = Route.useSearch();
   const navigate = useNavigate({ from: "/search" });
   const query = q.trim().slice(0, 200);
   const freshRef = useRef(false);
-  const resultQuery = useQuery({ queryKey: ["search", query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
+  const resultQuery = useQuery({ queryKey: ["search", tab, query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh, tab); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
   const checkAgain = () => { freshRef.current = true; resultQuery.refetch(); };
   const timeFilter = (TIME_OPTIONS.some((o) => o.value === time) ? time : "any") as TimeFilter;
   const langFilter = (LANG_OPTIONS.some((o) => o.value === lang) ? lang : "any") as LangFilter;
   const typeFilter = (TYPE_OPTIONS.some((o) => o.value === type) ? type : "all") as TypeFilter;
-  const filtersActive = timeFilter !== "any" || langFilter !== "any" || typeFilter !== "all";
+  const filtersActive = tab === "all" && (timeFilter !== "any" || langFilter !== "any" || typeFilter !== "all");
   const allResults = resultQuery.data?.status === "ok" ? resultQuery.data.results : [];
   const visibleResults = useMemo(() => applyFilters(allResults, { time: timeFilter, lang: langFilter, type: typeFilter }), [allResults, timeFilter, langFilter, typeFilter]);
   const setFilter = (patch: Partial<{ time: string; lang: string; type: string }>) => { void navigate({ search: (prev) => ({ ...prev, ...patch }) }); };
@@ -85,8 +90,8 @@ function SearchPage() {
           <SearchBox initialQuery={query} compact />
           <Button variant="ghost" size="icon" asChild><Link to="/settings" aria-label="Search settings"><Settings2 /></Link></Button>
         </div>
-        <nav className="result-tabs" aria-label="Search categories"><span className="active">All</span><span>Images</span><span>News</span><span>Videos</span></nav>
-        {resultQuery.data?.status === "ok" && allResults.length > 0 && (
+        <nav className="result-tabs" aria-label="Search categories">{TABS.map((t) => <Link key={t.id} to="/search" search={(prev) => ({ ...prev, q: query, page: 1, tab: t.id })} className={tab === t.id ? "active" : undefined} aria-current={tab === t.id ? "page" : undefined}>{t.label}</Link>)}<Link to="/history" className="tab-history">History</Link></nav>
+        {tab === "all" && resultQuery.data?.status === "ok" && allResults.length > 0 && (
           <div className="result-filters" role="group" aria-label="Refine results">
             <FilterSelect label="Time" value={timeFilter} options={TIME_OPTIONS} onChange={(value) => setFilter({ time: value })} />
             <FilterSelect label="Language" value={langFilter} options={LANG_OPTIONS} onChange={(value) => setFilter({ lang: value })} />
@@ -95,6 +100,7 @@ function SearchPage() {
           </div>
         )}
       </header>
+      {query && <div className="results-top-ad"><AdSlot position="top" /></div>}
       <main className="results-main">
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
@@ -108,12 +114,13 @@ function SearchPage() {
               {allResults.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : visibleResults.length === 0 ? (
                 <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
-                <>{page === 1 && !filtersActive && <AnswerBox query={query} results={allResults} />}
-                <ol className="result-list">{visibleResults.map((result) => <li key={result.url}>
+                <>{page === 1 && !filtersActive && tab === "all" && <AnswerBox query={query} results={allResults} />}
+                {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span>{result.source || result.displayUrl}</span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}<ExternalLink aria-hidden="true" /></h2></a>
-                  <p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}
-                </li>)}</ol></>
+                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></a>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
+                </li>)}</ol>}
+                {tab !== "images" && visibleResults.length > 3 && <AdSlot position="inline" />}</>
               )}
               {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (allResults.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={(prev) => ({ ...prev, q: item, page: 1 })}>{item}</Link>)}</div></section> : null; })()}
               {visibleResults.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page - 1 })}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page + 1 })}>Next</Link></Button></nav>}
@@ -125,6 +132,11 @@ function SearchPage() {
       <SiteFooter />
     </div>
   );
+}
+function ImageGrid({ results }: { results: SearchResult[] }) {
+  const shown = results.filter((r) => r.image);
+  if (!shown.length) return <State icon={<SearchX />} title="No images found" text="Try a different or broader search." />;
+  return <ul className="image-grid">{shown.map((r) => <li key={r.url + r.image}><a href={r.url} target="_blank" rel="noopener noreferrer"><img src={r.image} alt={r.title} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.closest("li") as HTMLElement).style.display = "none"; }} /><span className="image-caption">{r.title}</span><span className="image-source"><SiteIcon src={r.favicon} label={r.displayUrl} />{r.displayUrl.split("/")[0]}</span></a></li>)}</ul>;
 }
 function State({ icon, title, text, action }: { icon: React.ReactNode; title: string; text: string; action?: React.ReactNode }) { return <div className="result-state">{icon}<h2>{title}</h2><p>{text}</p>{action}</div>; }
 

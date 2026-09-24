@@ -30,29 +30,30 @@ export function buildRelated(query: string, limit = 6): string[] {
     .slice(0, limit);
 }
 
-const HISTORY_KEY = "bharatkhoj.recent-searches";
+const HISTORY_KEY = "bharatkhoj.search-history.v2";
+const MAX = 100;
+export type HistoryEntry = { q: string; t: number };
 
-export function readHistory(): string[] {
+export function readEntries(): HistoryEntry[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(HISTORY_KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string").slice(0, 5) : [];
-  } catch {
+    const parsed = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]") as unknown;
+    if (Array.isArray(parsed)) return parsed.filter((e): e is HistoryEntry => !!e && typeof e.q === "string" && typeof e.t === "number").slice(0, MAX);
     return [];
-  }
+  } catch { return []; }
 }
-
+function save(list: HistoryEntry[]) {
+  try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); window.dispatchEvent(new Event("bharatkhoj-history")); } catch { /* ignore */ }
+}
+export function readHistory(): string[] { return readEntries().map((e) => e.q); }
 export function pushHistory(query: string): string[] {
   const clean = query.trim().replace(/\s+/g, " ");
   if (!clean || typeof window === "undefined") return readHistory();
-  const next = [clean, ...readHistory().filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 5);
-  try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-  return next;
+  save([{ q: clean, t: Date.now() }, ...readEntries().filter((e) => e.q.toLowerCase() !== clean.toLowerCase())].slice(0, MAX));
+  return readHistory();
 }
-
 export function removeHistory(query: string): string[] {
-  const next = readHistory().filter((item) => item !== query);
-  try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-  return next;
+  save(readEntries().filter((e) => e.q !== query));
+  return readHistory();
 }
+export function clearHistory() { save([]); }
