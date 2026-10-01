@@ -17,12 +17,24 @@ function AnswerBox({ query, results }: { query: string; results: SearchResult[] 
     queryFn: async () => {
       const res = await fetch("/api/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ q: query, sources }) });
       if (!res.ok) return null;
-      return (await res.json()) as { answer: string; facts: { text: string; sourceIndex: number }[]; imageIndex: number | null };
+      return (await res.json()) as { answer: string; facts: { text: string; sourceIndex: number }[]; imageIndex: number | null; imageQuery: string | null };
+    },
+  });
+  const imageQuery = answer.data?.imageIndex == null ? answer.data?.imageQuery : null;
+  const imageResults = useQuery({
+    queryKey: ["answer-image", imageQuery],
+    enabled: Boolean(imageQuery && answer.data?.answer),
+    staleTime: 10 * 60_000, retry: 0,
+    queryFn: async () => {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(imageQuery ?? "")}&pageSize=5&vertical=images`);
+      if (!response.ok) return [];
+      const data = (await response.json()) as SearchResponse;
+      return data.status === "ok" ? data.results : [];
     },
   });
   if (answer.isLoading) return <div className="answer-box answer-loading" aria-busy="true"><span /><span /></div>;
   if (!answer.data?.answer) return null;
-  const imageSource = answer.data.imageIndex !== null ? sources[answer.data.imageIndex] : undefined;
+  const imageSource = answer.data.imageIndex !== null ? sources[answer.data.imageIndex] : imageResults.data?.find((result) => result.image && imageQuery && result.title.toLowerCase().includes(imageQuery.toLowerCase()));
   const facts = answer.data.facts?.filter((fact) => sources[fact.sourceIndex]);
   return <section className="answer-box" aria-label="Quick answer">
     <p className="answer-label">BharatKhoj Answer</p>

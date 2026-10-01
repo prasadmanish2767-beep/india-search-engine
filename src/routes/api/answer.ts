@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-type AnswerData = { answer: string; facts: { text: string; sourceIndex: number }[]; imageIndex: number | null };
-const empty: AnswerData = { answer: "", facts: [], imageIndex: null };
+type AnswerData = { answer: string; facts: { text: string; sourceIndex: number }[]; imageIndex: number | null; imageQuery: string | null };
+const empty: AnswerData = { answer: "", facts: [], imageIndex: null, imageQuery: null };
 const cache = new Map<string, { expires: number; value: AnswerData }>();
 const safeUrl = (value: string) => {
   try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; }
@@ -15,6 +15,7 @@ const Output = z.object({
   answer: z.string().max(500),
   facts: z.array(z.object({ text: z.string().max(200), sourceIndex: z.number().int() })).max(4),
   imageIndex: z.number().int().nullable(),
+  imageQuery: z.string().max(80).nullable(),
 });
 
 export const Route = createFileRoute("/api/answer")({
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/api/answer")({
           body: JSON.stringify({
             model: "google/gemini-3-flash-preview",
             messages: [
-              { role: "system", content: 'Use ONLY the supplied search results as evidence. Return ONLY valid JSON: {"answer":"one or two short sentences","facts":[{"text":"brief distinct fact","sourceIndex":0}],"imageIndex":null}. Begin the answer with the direct answer. Include 0–4 genuinely useful, non-repetitive facts supported by the cited result index; omit facts if evidence is weak. imageIndex may be an index only when the query is about a specific visible person, place, animal, object or event AND the result title and snippet establish that its image depicts that subject; otherwise null. Never invent an image or fact. If the results cannot answer the query, return an empty answer, empty facts and null imageIndex. No markdown, no provider names.' },
+              { role: "system", content: 'Use ONLY the supplied search results as evidence. Return ONLY valid JSON: {"answer":"one or two short sentences","facts":[{"text":"brief distinct fact","sourceIndex":0}],"imageIndex":null,"imageQuery":null}. Begin the answer with the direct answer. Include 0–4 genuinely useful, non-repetitive facts supported by the cited result index; omit facts if evidence is weak. For a query about a specific visible person, place, animal or object, set imageIndex to a supplied image index ONLY if the result title and snippet establish that the image depicts the exact subject. If no suitable supplied image exists, set imageQuery to the short exact subject name mentioned in the answer; otherwise set both image fields to null. Images are NOT useful for abstract concepts, how-to, definitions or time-sensitive events. Never invent a fact or subject. If the results cannot answer the query, return an empty answer, empty facts and null image fields. No markdown, no provider names.' },
               { role: "user", content: `Query: ${q}\n\nSearch results:\n${context}` },
             ],
           }),
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/api/answer")({
           answer: output.data.answer.trim().slice(0, 400),
           facts: output.data.facts.filter((fact) => fact.text.trim() && sources[fact.sourceIndex]).map((fact) => ({ text: fact.text.trim(), sourceIndex: fact.sourceIndex })),
           imageIndex: output.data.imageIndex !== null && sources[output.data.imageIndex]?.image ? output.data.imageIndex : null,
+          imageQuery: output.data.imageQuery && output.data.answer.toLowerCase().includes(output.data.imageQuery.trim().toLowerCase()) ? output.data.imageQuery.trim() : null,
         };
         cache.set(key, { expires: Date.now() + 10 * 60_000, value });
         return Response.json(value);
