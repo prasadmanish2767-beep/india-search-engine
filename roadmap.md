@@ -1,0 +1,4 @@
+- [ ] Remove BharatKhoj ad spaces and ad-specific presentation.
+- [ ] Add evidence-backed Answer image and Key Facts; improve organic result layout.
+- [ ] Standardize the tagline to “India's First Search Engine” everywhere in app text.
+- [ ] Verify desktop/mobile behavior and diagnostics.

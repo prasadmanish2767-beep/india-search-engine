@@ -77,8 +77,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BharatKhoj — India First Search Engine" },
-      { name: "description", content: "Search the web with BharatKhoj, India First Search Engine." },
+      { title: "BharatKhoj — India's First Search Engine" },
+      { name: "description", content: "Search the web with BharatKhoj, India's First Search Engine." },
       { name: "author", content: "BharatKhoj" },
       { property: "og:site_name", content: "BharatKhoj" },
       { property: "og:type", content: "website" },
