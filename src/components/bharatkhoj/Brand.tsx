@@ -12,7 +12,7 @@ export function Brand({ compact = false, className, link = true }: BrandProps) {
         alt="BharatKhoj"
         className={compact ? "h-10 w-14 object-cover object-top" : "h-auto w-full max-w-[24rem]"}
       />
-      {compact && <span className="sr-only">BharatKhoj — India First Search Engine</span>}
+      {compact && <span className="sr-only">BharatKhoj — India's First Search Engine</span>}
     </span>
   );
   return link ? <Link to="/" aria-label="BharatKhoj home">{content}</Link> : content;
