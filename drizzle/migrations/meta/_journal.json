@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790911655601,
+      "tag": "0000_create_bharatkhoj_listings",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790911671423,
+      "tag": "0001_restrict_listing_public_columns",
+      "breakpoints": true
+    }
+  ]
+}
