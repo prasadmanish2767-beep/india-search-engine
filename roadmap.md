@@ -2,3 +2,4 @@
 - [x] Add evidence-backed Answer image and Key Facts; improve organic result layout.
 - [x] Standardize the tagline to “India's First Search Engine” everywhere in app text.
 - [x] Verify desktop/mobile behavior and diagnostics.
+- [ ] Show the selected Answer image fully on both desktop and mobile without changing selection logic; verify at both widths.
