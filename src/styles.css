@@ -411,3 +411,13 @@
     .result-tabs { overflow-x: auto; }
   }
 }
+
+@layer components {
+  .history-ranges { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
+  .history-custom { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: .75rem; font-size: .85rem; color: var(--muted-foreground); }
+  .history-custom label { display: flex; flex-direction: column; gap: .25rem; }
+  .history-custom input { border: 1px solid var(--border); border-radius: var(--radius); padding: .4rem .6rem; background: var(--background); color: var(--foreground); max-width: 100%; }
+  .history-bar { flex-wrap: wrap; gap: .5rem; }
+  .history-sub { color: var(--muted-foreground); }
+  @media (max-width: 760px) { .history-list li { flex-wrap: wrap; } .history-list time { font-size: .75rem; } }
+}
