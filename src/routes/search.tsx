@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SearchResult } from "@/lib/search.types";
 
 function SiteIcon({ src, label }: { src?: string | undefined; label: string }) {
@@ -53,7 +53,7 @@ import { Brand } from "@/components/bharatkhoj/Brand";
 import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 import { Button } from "@/components/ui/button";
-import { buildRelated } from "@/lib/suggest";
+import { buildRelated, pushHistory, pushVisit, readHistory } from "@/lib/suggest";
 import { applyFilters, LANG_OPTIONS, TIME_OPTIONS, TYPE_OPTIONS, type LangFilter, type TimeFilter, type TypeFilter } from "@/lib/filters";
 import type { SearchResponse } from "@/lib/search.types";
 
@@ -92,6 +92,19 @@ function SearchPage() {
   const navigate = useNavigate({ from: "/search" });
   const query = q.trim().slice(0, 200);
   const freshRef = useRef(false);
+  useEffect(() => {
+    if (!query) return;
+    if (readHistory()[0]?.toLowerCase() !== query.toLowerCase()) pushHistory(query);
+    const onClick = (event: MouseEvent) => {
+      const link = (event.target as HTMLElement | null)?.closest?.("main a[target='_blank']") as HTMLAnchorElement | null;
+      if (!link) return;
+      const title = link.closest("li")?.querySelector("h2, .image-caption")?.textContent || link.getAttribute("aria-label") || link.hostname;
+      pushVisit(query, link.href, title);
+    };
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("auxclick", onClick, true);
+    return () => { document.removeEventListener("click", onClick, true); document.removeEventListener("auxclick", onClick, true); };
+  }, [query]);
   const resultQuery = useQuery({ queryKey: ["search", tab, query, page], queryFn: () => { const fresh = freshRef.current; freshRef.current = false; return fetchResults(query, page, fresh, tab); }, enabled: query.length > 0, staleTime: 30_000, retry: 0 });
   const checkAgain = () => { freshRef.current = true; resultQuery.refetch(); };
   const timeFilter = (TIME_OPTIONS.some((o) => o.value === time) ? time : "any") as TimeFilter;
