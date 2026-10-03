@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - The answer endpoint returns grounded answer text, cited facts, and an optional existing result-image index in one response, because image and facts must come from the same real results without extra search requests.
+- Search result links open an in-app website viewer with an explicit original-site fallback because independent sites can block iframe embedding.
