@@ -84,7 +84,7 @@ function HistoryPage() {
             {shown.map((e) => (
               <li key={`${e.t}-${e.q}-${e.url ?? ""}`}>
                 {e.url ? (
-                  <Link to="/view" search={{ url: e.url, q: e.q, title: e.title || e.url }}><ExternalLink aria-hidden="true" /><span>{e.title || e.url}<small className="history-sub"> · {new URL(e.url).hostname} · from “{e.q}”</small></span></Link>
+                  <a href={e.url} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden="true" /><span>{e.title || e.url}<small className="history-sub"> · {new URL(e.url).hostname} · from “{e.q}”</small></span></a>
                 ) : (
                   <Link to="/search" search={{ q: e.q, page: 1 }}><Search aria-hidden="true" /><span>{e.q}</span></Link>
                 )}

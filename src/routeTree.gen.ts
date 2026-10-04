@@ -18,7 +18,6 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SubmitRouteImport } from './routes/submit'
-import { Route as ViewRouteImport } from './routes/view'
 import { Route as ApiAnswerRouteImport } from './routes/api/answer'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as ApiSubmitSiteRouteImport } from './routes/api/submit-site'
@@ -69,11 +68,6 @@ const SubmitRoute = SubmitRouteImport.update({
   path: '/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ViewRoute = ViewRouteImport.update({
-  id: '/view',
-  path: '/view',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAnswerRoute = ApiAnswerRouteImport.update({
   id: '/api/answer',
   path: '/api/answer',
@@ -105,7 +99,6 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/submit': typeof SubmitRoute
-  '/view': typeof ViewRoute
   '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/submit-site': typeof ApiSubmitSiteRoute
@@ -121,7 +114,6 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/submit': typeof SubmitRoute
-  '/view': typeof ViewRoute
   '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/submit-site': typeof ApiSubmitSiteRoute
@@ -138,7 +130,6 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/submit': typeof SubmitRoute
-  '/view': typeof ViewRoute
   '/api/answer': typeof ApiAnswerRoute
   '/api/search': typeof ApiSearchRoute
   '/api/submit-site': typeof ApiSubmitSiteRoute
@@ -156,7 +147,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/submit'
-    | '/view'
     | '/api/answer'
     | '/api/search'
     | '/api/submit-site'
@@ -172,7 +162,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/submit'
-    | '/view'
     | '/api/answer'
     | '/api/search'
     | '/api/submit-site'
@@ -188,7 +177,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/submit'
-    | '/view'
     | '/api/answer'
     | '/api/search'
     | '/api/submit-site'
@@ -205,7 +193,6 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   SubmitRoute: typeof SubmitRoute
-  ViewRoute: typeof ViewRoute
   ApiAnswerRoute: typeof ApiAnswerRoute
   ApiSearchRoute: typeof ApiSearchRoute
   ApiSubmitSiteRoute: typeof ApiSubmitSiteRoute
@@ -277,13 +264,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/view': {
-      id: '/view'
-      path: '/view'
-      fullPath: '/view'
-      preLoaderRoute: typeof ViewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/answer': {
       id: '/api/answer'
       path: '/api/answer'
@@ -325,7 +305,6 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   SubmitRoute: SubmitRoute,
-  ViewRoute: ViewRoute,
   ApiAnswerRoute: ApiAnswerRoute,
   ApiSearchRoute: ApiSearchRoute,
   ApiSubmitSiteRoute: ApiSubmitSiteRoute,
