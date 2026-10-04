@@ -40,9 +40,9 @@ function AnswerBox({ query, results }: { query: string; results: SearchResult[] 
     <p className="answer-label">BharatKhoj Answer</p>
     <div className="answer-content">
       <p className="answer-text">{answer.data.answer}</p>
-      {imageSource?.image && <Link className="answer-image" to="/view" search={{ url: imageSource.url, q: query, title: imageSource.title }} aria-label={`View image source: ${imageSource.title}`}><img src={imageSource.image} alt={imageSource.title} loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.parentElement?.remove(); }} /><span>{new URL(imageSource.url).hostname}</span></Link>}
+      {imageSource?.image && <a className="answer-image" href={imageSource.url} target="_blank" rel="noopener noreferrer" aria-label={`View image source: ${imageSource.title}`}><img src={imageSource.image} alt={imageSource.title} loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.parentElement?.remove(); }} /><span>{new URL(imageSource.url).hostname}</span></a>}
     </div>
-    {facts && facts.length > 0 && <div className="answer-facts"><h2>Key Facts</h2><ul>{facts.map((fact, index) => { const source = sources[fact.sourceIndex]; return source ? <li key={`${index}-${fact.text}`}><span>{fact.text}</span><Link to="/view" search={{ url: source.url, q: query, title: source.title }} aria-label={`Source for ${fact.text}`}>{new URL(source.url).hostname}<ExternalLink aria-hidden="true" /></Link></li> : null; })}</ul></div>}
+    {facts && facts.length > 0 && <div className="answer-facts"><h2>Key Facts</h2><ul>{facts.map((fact, index) => { const source = sources[fact.sourceIndex]; return source ? <li key={`${index}-${fact.text}`}><span>{fact.text}</span><a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`Source for ${fact.text}`}>{new URL(source.url).hostname}<ExternalLink aria-hidden="true" /></a></li> : null; })}</ul></div>}
   </section>;
 }
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -96,9 +96,9 @@ function SearchPage() {
     if (!query) return;
     if (readHistory()[0]?.toLowerCase() !== query.toLowerCase()) pushHistory(query);
     const onClick = (event: MouseEvent) => {
-      const link = (event.target as HTMLElement | null)?.closest?.("main a[href^='/view']") as HTMLAnchorElement | null;
+      const link = (event.target as HTMLElement | null)?.closest?.("main a[href^='http']") as HTMLAnchorElement | null;
       if (!link) return;
-      const destination = new URL(link.href).searchParams.get("url");
+      const destination = link.href;
       if (!destination) return;
       const title = link.closest("li")?.querySelector("h2, .image-caption")?.textContent || link.getAttribute("aria-label") || destination;
       pushVisit(query, destination, title);
@@ -151,8 +151,8 @@ function SearchPage() {
                 <>{page === 1 && !filtersActive && tab === "all" && <AnswerBox query={query} results={allResults} />}
                 {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span></div>
-                  <Link to="/view" search={{ url: result.url, q: query, title: result.title }}><h2>{result.title}</h2></Link>
-                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <Link className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} to="/view" search={{ url: result.url, q: query, title: result.title }} tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></Link>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
+                  <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}</h2></a>
+                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></Link>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
                 </li>)}</ol>}
                  </>
               )}
