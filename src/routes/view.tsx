@@ -38,7 +38,7 @@ function WebsiteViewer() {
       {safeUrl && <div className="viewer-address" title={safeUrl}><Globe2 aria-hidden="true" /><span>{host}</span></div>}
     </header>
     {safeUrl ? <>
-      <div className="viewer-notice" role="status"><span>{title || host} · This website is independent of BharatKhoj. Some sites do not allow viewing inside another website; use “Open original” if it stays blank.</span></div>
+      <div className="viewer-notice" role="status"><span>{title || host}</span></div>
       <main className="viewer-frame-wrap">
         {loading && <p className="viewer-loading">Opening {host}…</p>}
         <iframe key={safeUrl} className="viewer-frame" src={safeUrl} title={title || host} onLoad={() => setLoading(false)} referrerPolicy="no-referrer" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads" />
