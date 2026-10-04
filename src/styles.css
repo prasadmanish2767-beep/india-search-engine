@@ -191,7 +191,7 @@
   .suggestions { animation: bk-fade-down .16s ease-out; max-height: 60vh; overflow-y: auto; }
   .suggestions li { display: flex; align-items: center; gap: .25rem; }
   .suggestions li > button:first-child { flex: 1; min-width: 0; }
-  .suggestions li > button:first-child span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .suggestions li > button:first-child span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; font-weight: 500; color: var(--foreground); opacity: 1; }
   .suggestions strong { font-weight: 700; color: var(--brand-orange); }
   .suggestion-remove { width: auto; flex: 0 0 auto; padding: .45rem; color: var(--muted-foreground); }
   .suggestion-remove svg { width: .85rem; }
