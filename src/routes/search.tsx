@@ -169,7 +169,7 @@ function SearchPage() {
 function ImageGrid({ results }: { results: SearchResult[] }) {
   const shown = results.filter((r) => r.image);
   if (!shown.length) return <State icon={<SearchX />} title="No images found" text="Try a different or broader search." />;
-  return <ul className="image-grid">{shown.map((r) => <li key={r.url + r.image}><a href={r.url} target="_blank" rel="noopener noreferrer"><img src={r.image} alt={r.title} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.closest("li") as HTMLElement).style.display = "none"; }} /><span className="image-caption">{r.title}</span><span className="image-source"><SiteIcon src={r.favicon} label={r.displayUrl} />{r.displayUrl.split("/")[0]}</span></Link></li>)}</ul>;
+  return <ul className="image-grid">{shown.map((r) => <li key={r.url + r.image}><a href={r.url} target="_blank" rel="noopener noreferrer"><img src={r.image} alt={r.title} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.closest("li") as HTMLElement).style.display = "none"; }} /><span className="image-caption">{r.title}</span><span className="image-source"><SiteIcon src={r.favicon} label={r.displayUrl} />{r.displayUrl.split("/")[0]}</span></a></li>)}</ul>;
 }
 function State({ icon, title, text, action }: { icon: React.ReactNode; title: string; text: string; action?: React.ReactNode }) { return <div className="result-state">{icon}<h2>{title}</h2><p>{text}</p>{action}</div>; }
 
