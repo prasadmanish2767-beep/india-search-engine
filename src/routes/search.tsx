@@ -152,7 +152,7 @@ function SearchPage() {
                 {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}</h2></a>
-                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></Link>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
+                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></a>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
                 </li>)}</ol>}
                  </>
               )}
