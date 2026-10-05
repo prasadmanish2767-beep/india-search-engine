@@ -106,6 +106,7 @@ export function SearchBox({ initialQuery = "", compact = false, autoFocus = fals
           value={value}
           onChange={(event) => { setValue(event.target.value); setOpen(true); }}
           onFocus={() => { setHistory(readHistory()); setOpen(true); }}
+          onClick={() => { setHistory(readHistory()); setOpen(true); }}
           onBlur={() => window.setTimeout(() => setOpen(false), 120)}
           onKeyDown={(event) => {
             if (event.key === "ArrowDown" && items.length) { event.preventDefault(); setOpen(true); setActive((current) => Math.min(current + 1, items.length - 1)); }
