@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SearchResult } from "@/lib/search.types";
+import { answerHighlights, imageRelevance } from "@/lib/answer-presentation";
 
 function SiteIcon({ src, label }: { src?: string | undefined; label: string }) {
   const [failed, setFailed] = useState(false);
@@ -8,10 +9,20 @@ function SiteIcon({ src, label }: { src?: string | undefined; label: string }) {
   return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" width={18} height={18} onError={() => setFailed(true)} />;
 }
 
+function HighlightedAnswer({ text, lead = false }: { text: string; lead?: boolean }) {
+  return <>{answerHighlights(text, lead).map((part, index) => part.highlighted ? <mark className="answer-highlight" key={index}>{part.text}</mark> : <span key={index}>{part.text}</span>)}</>;
+}
+
+function RelevantImage({ source }: { source: { url: string; title: string; image?: string } }) {
+  const [failedImage, setFailedImage] = useState<string>();
+  if (!source.image || failedImage === source.image) return null;
+  return <a className="answer-image" href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`View image source: ${source.title}`}><img src={source.image} alt={source.title} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailedImage(source.image)} /><span>{new URL(source.url).hostname}</span></a>;
+}
+
 function AnswerBox({ query, results }: { query: string; results: SearchResult[] }) {
   const sources = results.slice(0, 6).map((r) => ({ title: r.title.slice(0, 300), snippet: r.snippet.slice(0, 400), url: r.url, ...(r.image ? { image: r.image } : {}) }));
   const answer = useQuery({
-    queryKey: ["answer", query.toLowerCase()],
+    queryKey: ["answer", query.toLowerCase(), sources],
     enabled: sources.length > 0 && query.length > 1,
     staleTime: Infinity, retry: 0,
     queryFn: async () => {
@@ -20,11 +31,12 @@ function AnswerBox({ query, results }: { query: string; results: SearchResult[] 
       return (await res.json()) as { answer: string; facts: { text: string; sourceIndex: number }[]; imageIndex: number | null; imageQuery: string | null };
     },
   });
-  const imageQuery = answer.data?.imageIndex == null ? answer.data?.imageQuery : null;
+  const suppliedImage = results.find((result) => result.image && imageRelevance(query, result.title) >= 0.5);
+  const imageQuery = query;
   const imageResults = useQuery({
     queryKey: ["answer-image", imageQuery],
-    enabled: Boolean(imageQuery && answer.data?.answer),
-    staleTime: 10 * 60_000, retry: 0,
+    enabled: sources.length > 0 && query.length > 1 && !suppliedImage,
+    staleTime: Infinity, retry: 0, refetchOnWindowFocus: false,
     queryFn: async () => {
       const response = await fetch(`/api/search?q=${encodeURIComponent(imageQuery ?? "")}&pageSize=5&vertical=images`);
       if (!response.ok) return [];
@@ -32,17 +44,18 @@ function AnswerBox({ query, results }: { query: string; results: SearchResult[] 
       return data.status === "ok" ? data.results : [];
     },
   });
-  if (answer.isLoading) return <div className="answer-box answer-loading" aria-busy="true"><span /><span /></div>;
-  if (!answer.data?.answer) return null;
-  const imageSource = answer.data.imageIndex !== null ? sources[answer.data.imageIndex] : imageResults.data?.find((result) => result.image && imageQuery && result.title.toLowerCase().includes(imageQuery.toLowerCase()));
+  const selectedImage = answer.data?.imageIndex != null ? sources[answer.data.imageIndex] : undefined;
+  const imageSource = selectedImage?.image ? selectedImage : suppliedImage ?? imageResults.data?.filter((result) => result.image && imageRelevance(query, result.title) >= 0.5).sort((a, b) => imageRelevance(query, b.title) - imageRelevance(query, a.title))[0];
+  if (answer.isLoading) return <section className="answer-box" aria-label="Quick answer" aria-busy="true"><div className="answer-content"><div className="answer-loading"><span /><span /></div>{imageSource?.image && <RelevantImage source={imageSource} />}</div></section>;
+  if (!answer.data?.answer) return imageSource?.image ? <section className="search-relevant-image" aria-label="Relevant search image"><RelevantImage source={imageSource} /></section> : null;
   const facts = answer.data.facts?.filter((fact) => sources[fact.sourceIndex]);
   return <section className="answer-box" aria-label="Quick answer">
     <p className="answer-label">BharatKhoj Answer</p>
     <div className="answer-content">
-      <p className="answer-text">{answer.data.answer}</p>
-      {imageSource?.image && <a className="answer-image" href={imageSource.url} target="_blank" rel="noopener noreferrer" aria-label={`View image source: ${imageSource.title}`}><img src={imageSource.image} alt={imageSource.title} loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.parentElement?.remove(); }} /><span>{new URL(imageSource.url).hostname}</span></a>}
+      <p className="answer-text"><HighlightedAnswer text={answer.data.answer} lead /></p>
+      {imageSource?.image && <RelevantImage source={imageSource} />}
     </div>
-    {facts && facts.length > 0 && <div className="answer-facts"><h2>Key Facts</h2><ul>{facts.map((fact, index) => { const source = sources[fact.sourceIndex]; return source ? <li key={`${index}-${fact.text}`}><span>{fact.text}</span><a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`Source for ${fact.text}`}>{new URL(source.url).hostname}<ExternalLink aria-hidden="true" /></a></li> : null; })}</ul></div>}
+    {facts && facts.length > 0 && <div className="answer-facts"><h2>Key Facts</h2><ul>{facts.map((fact, index) => { const source = sources[fact.sourceIndex]; return source ? <li key={`${index}-${fact.text}`}><span><HighlightedAnswer text={fact.text} lead /></span><a href={source.url} target="_blank" rel="noopener noreferrer" aria-label={`Source for ${fact.text}`}>{new URL(source.url).hostname}<ExternalLink aria-hidden="true" /></a></li> : null; })}</ul></div>}
   </section>;
 }
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -148,7 +161,7 @@ function SearchPage() {
               {allResults.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : visibleResults.length === 0 ? (
                 <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
-                <>{page === 1 && !filtersActive && tab === "all" && <AnswerBox query={query} results={allResults} />}
+                <>{tab === "all" && <AnswerBox query={query} results={visibleResults} />}
                 {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}</h2></a>

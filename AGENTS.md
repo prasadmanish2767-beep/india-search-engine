@@ -10,4 +10,6 @@
 <!-- LOVABLE:END -->
 
 - The answer endpoint returns grounded answer text, cited facts, and an optional existing result-image index in one response, because image and facts must come from the same real results without extra search requests.
-- Search result links open an in-app website viewer with an explicit original-site fallback because independent sites can block iframe embedding.
+- Search result links open the original website externally because the user canceled the in-app viewer.
+- Answer emphasis is computed from literal grounded answer text in a browser-safe helper; it never changes or invents facts.
+- Web searches use supplied relevant images first, then one cached real image search per submitted query; image display does not depend on an AI answer succeeding.
