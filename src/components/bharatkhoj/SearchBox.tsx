@@ -39,7 +39,16 @@ export function SearchBox({ initialQuery = "", compact = false, autoFocus = fals
   const listId = useId();
 
   useEffect(() => setValue(initialQuery), [initialQuery]);
-  useEffect(() => setHistory(readHistory()), []);
+  useEffect(() => {
+    const syncHistory = () => setHistory(readHistory());
+    syncHistory();
+    window.addEventListener("bharatkhoj-history", syncHistory);
+    window.addEventListener("storage", syncHistory);
+    return () => {
+      window.removeEventListener("bharatkhoj-history", syncHistory);
+      window.removeEventListener("storage", syncHistory);
+    };
+  }, []);
   useEffect(() => {
     const timer = window.setTimeout(() => setDebounced(value), 160);
     return () => window.clearTimeout(timer);
@@ -96,7 +105,7 @@ export function SearchBox({ initialQuery = "", compact = false, autoFocus = fals
         <input
           value={value}
           onChange={(event) => { setValue(event.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => { setHistory(readHistory()); setOpen(true); }}
           onBlur={() => window.setTimeout(() => setOpen(false), 120)}
           onKeyDown={(event) => {
             if (event.key === "ArrowDown" && items.length) { event.preventDefault(); setOpen(true); setActive((current) => Math.min(current + 1, items.length - 1)); }
@@ -121,20 +130,22 @@ export function SearchBox({ initialQuery = "", compact = false, autoFocus = fals
         <ul id={listId} role="listbox" className="suggestions">
           {items.map((item, index) => (
             <li key={`${item.recent ? "r" : "s"}-${item.text}`} id={`${listId}-${index}`} role="option" aria-selected={active === index}>
-              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => submit(item.text)}>
+              <Button type="button" variant="ghost" onMouseDown={(event) => event.preventDefault()} onClick={() => submit(item.text)}>
                 {item.recent ? <Clock3 aria-hidden="true" /> : <TrendingUp aria-hidden="true" />}
                 <Highlight text={item.text} query={debounced.trim()} />
-              </button>
+              </Button>
               {item.recent && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   className="suggestion-remove"
                   aria-label={`Remove ${item.text} from recent searches`}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => setHistory(removeHistory(item.text))}
                 >
                   <X aria-hidden="true" />
-                </button>
+                </Button>
               )}
             </li>
           ))}
