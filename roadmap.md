@@ -3,5 +3,5 @@
 - [x] Standardize the tagline to “India's First Search Engine” everywhere in app text.
 - [x] Verify desktop/mobile behavior and diagnostics.
 - [x] Show the selected Answer image fully on both desktop and mobile without changing selection logic; verify at both widths.
-- [ ] Open search results and visited history within BharatKhoj, with safe fallback for sites blocking embedding.
-- [ ] Standardize India’s branding and verify readable desktop/mobile viewer.
+- [x] Keep search results and visited history opening externally, as requested later; in-app viewer canceled.
+- [x] Verify empty-box Recent Searches and readable text on desktop and mobile.
