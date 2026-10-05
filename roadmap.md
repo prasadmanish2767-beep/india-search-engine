@@ -5,3 +5,5 @@
 - [x] Show the selected Answer image fully on both desktop and mobile without changing selection logic; verify at both widths.
 - [x] Keep search results and visited history opening externally, as requested later; in-app viewer canceled.
 - [x] Verify empty-box Recent Searches and readable text on desktop and mobile.
+- [ ] Show available real relevant imagery for each web search, including searches without a quick answer.
+- [ ] Highlight important answer facts/dates in light blue and verify desktop/mobile presentation.
