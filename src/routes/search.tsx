@@ -1,3 +1,4 @@
+import { brandImageMeta } from "@/lib/brand";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SearchResult } from "@/lib/search.types";
 import { answerHighlights, imageRelevance } from "@/lib/answer-presentation";
@@ -85,7 +86,7 @@ export const Route = createFileRoute("/search")({
     const q = typeof search?.q === "string" ? search.q.trim().slice(0, 200) : "";
     const title = q ? `${q} — BharatKhoj Search` : "Search — BharatKhoj";
     const description = q ? `Search results for ${q} on BharatKhoj.` : "Search the web with BharatKhoj, India's First Search Engine.";
-    return { meta: [{ title }, { name: "description", content: description }, { property: "og:title", content: title }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { property: "og:url", content: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }, { name: "twitter:card", content: "summary" }, ...(q ? [{ name: "robots", content: "noindex,follow" }] : [])], links: [{ rel: "canonical", href: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }] };
+    return { meta: [...brandImageMeta, { title }, { name: "description", content: description }, { property: "og:title", content: title }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { property: "og:url", content: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }, { name: "twitter:card", content: "summary" }, ...(q ? [{ name: "robots", content: "noindex,follow" }] : [])], links: [{ rel: "canonical", href: q ? `/search?q=${encodeURIComponent(q)}` : "/search" }] };
   },
   component: SearchPage,
 });
