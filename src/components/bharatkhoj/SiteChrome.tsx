@@ -33,7 +33,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
-        <p>© 2026 BharatKhoj. All rights reserved.</p>
+        <div className="footer-brand"><Brand compact /><p>© 2026 BharatKhoj. All rights reserved.</p></div>
         <nav aria-label="Footer navigation">
           <Link to="/history">History</Link><Link to="/preview">Result preview</Link><Link to="/about">About</Link><Link to="/privacy">Privacy Policy</Link><Link to="/contact">Contact</Link>
         </nav>

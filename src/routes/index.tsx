@@ -2,11 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Brand } from "@/components/bharatkhoj/Brand";
 import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
+import { brandImageMeta, BRAND_LOGO_URL, BRAND_SITE_URL } from "@/lib/brand";
 
 const description = "BharatKhoj is India's First Search Engine — a clean, privacy-conscious gateway to finding information across the web.";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      ...brandImageMeta,
       { title: "BharatKhoj — India's First Search Engine" },
       { name: "description", content: description },
       { property: "og:title", content: "BharatKhoj — India's First Search Engine" },
@@ -16,7 +18,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary" },
     ],
     links: [{ rel: "canonical", href: "/" }],
-    scripts: [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "Organization", name: "BharatKhoj", slogan: "India's First Search Engine", url: "/" }) }],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "BharatKhoj", slogan: "India's First Search Engine", url: BRAND_SITE_URL, image: BRAND_LOGO_URL }) }],
   }),
   component: HomePage,
 });
