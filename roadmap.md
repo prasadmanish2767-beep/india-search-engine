@@ -7,3 +7,5 @@
 - [x] Verify empty-box Recent Searches and readable text on desktop and mobile.
 - [ ] Show available real relevant imagery for each web search, including searches without a quick answer.
 - [ ] Highlight important answer facts/dates in light blue and verify desktop/mobile presentation.
+- [ ] Store original brand logo locally and use it in header/footer/favicon/sharing.
+- [ ] Verify local logo changes and the current Vercel deployment; report if redeployment is needed.
