@@ -1,3 +1,4 @@
+import { brandImageMeta } from "@/lib/brand";
 import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Copy, Globe2 } from "lucide-react";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const description = "List your website on BharatKhoj and receive a BharatKhoj Listed badge for your platform.";
 export const Route = createFileRoute("/submit")({
-  head: () => ({ meta: [{ title: "Add Your Website — BharatKhoj" }, { name: "description", content: description }, { property: "og:title", content: "Add Your Website — BharatKhoj" }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }], links: [{ rel: "canonical", href: "/submit" }] }),
+  head: () => ({ meta: [...brandImageMeta, { title: "Add Your Website — BharatKhoj" }, { name: "description", content: description }, { property: "og:title", content: "Add Your Website — BharatKhoj" }, { property: "og:description", content: description }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }], links: [{ rel: "canonical", href: "/submit" }] }),
   component: SubmitPage,
 });
 

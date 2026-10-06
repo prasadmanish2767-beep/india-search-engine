@@ -13,3 +13,5 @@
 - Search result links open the original website externally because the user canceled the in-app viewer.
 - Answer emphasis is computed from literal grounded answer text in a browser-safe helper; it never changes or invents facts.
 - Web searches use supplied relevant images first, then one cached real image search per submitted query; image display does not depend on an AI answer succeeding.
+- Brand surfaces use one locally served public logo and a favicon derived from it, avoiding platform-specific asset proxies on external hosting.
+- Leaf routes share brand-image metadata from a browser-safe module; absolute sharing URLs target the user-specified public hosting origin.

@@ -1,3 +1,4 @@
+import { brandImageMeta } from "@/lib/brand";
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock3, ExternalLink, Search, Trash2, X } from "lucide-react";
@@ -8,7 +9,7 @@ import { clearHistory, readEntries, removeEntry, type HistoryEntry } from "@/lib
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Search history — BharatKhoj" },
+      ...brandImageMeta,      { title: "Search history — BharatKhoj" },
       { name: "description", content: "Your BharatKhoj searches and visited results, stored only on this device." },
       { property: "og:title", content: "Search history — BharatKhoj" },
       { property: "og:description", content: "Your BharatKhoj searches and visited results, stored only on this device." },

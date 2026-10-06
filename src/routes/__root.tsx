@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Button } from "@/components/ui/button";
+import { BRAND_LOGO_URL, BRAND_SITE_URL } from "@/lib/brand";
 
 function NotFoundComponent() {
   return (
@@ -94,7 +95,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
     ],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "Organization", name: "BharatKhoj", url: BRAND_SITE_URL, logo: BRAND_LOGO_URL }) }],
   }),
   shellComponent: RootShell,
   component: RootComponent,

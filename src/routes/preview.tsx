@@ -1,3 +1,4 @@
+import { brandImageMeta } from "@/lib/brand";
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ import type { SearchResponse, SearchResult } from "@/lib/search.types";
 export const Route = createFileRoute("/preview")({
   head: () => ({
     meta: [
-      { title: "Result preview lab — BharatKhoj" },
+      ...brandImageMeta,      { title: "Result preview lab — BharatKhoj" },
       { name: "description", content: "Compare raw and cleaned BharatKhoj search snippets and site logos." },
       { property: "og:title", content: "Result preview lab — BharatKhoj" },
       { property: "og:description", content: "Compare raw and cleaned BharatKhoj search snippets and site logos." },
