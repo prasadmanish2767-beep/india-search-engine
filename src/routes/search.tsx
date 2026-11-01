@@ -152,6 +152,7 @@ function SearchPage() {
       <main className="results-main">
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
+          {query && tab === "all" && isFounderQuery(query) && <FounderCard />}
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
           {query && (resultQuery.isError || (resultQuery.data && resultQuery.data.status !== "ok")) && <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} />}
           {resultQuery.data?.status === "ok" && (
@@ -203,5 +204,30 @@ function FilterSelect<T extends string>({ label, value, options, onChange }: { l
         {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     </label>
+  );
+}
+function isFounderQuery(q: string) {
+  const s = q.toLowerCase().replace(/\s+/g, " ").trim();
+  return /\bpr[ae]m prasad\b/.test(s) || /coreai (founder|ceo)/.test(s) || /(founder|ceo) of coreai/.test(s);
+}
+const FOUNDER_PROJECTS = [
+  { name: "CoreAI", url: "https://coreaii.vercel.app/" },
+  { name: "Buzz", url: "https://buzzofficial.vercel.app/" },
+  { name: "AI TryOnix", url: "https://aitryonix.vercel.app/" },
+  { name: "BharatKhoj", url: "https://india-search-engine.vercel.app/" },
+];
+function FounderCard() {
+  return (
+    <section className="founder-card" aria-label="Prem Prasad profile">
+      <img src="/prem-prasad.jpg" alt="Prem Prasad" width={600} height={570} />
+      <div>
+        <h2>Prem Prasad</h2>
+        <p className="founder-role">Founder &amp; CEO, CoreAI · Kolkata, West Bengal</p>
+        <p>Prem Prasad is an Indian young tech entrepreneur, developer, and Founder &amp; CEO of CoreAI, based in Kolkata, West Bengal. His fields include Artificial Intelligence, Web Development, Software Engineering, and Digital Innovation.</p>
+        <p><strong>Projects:</strong> CoreAI, Buzz, AI TryOnix, and BharatKhoj.</p>
+        <p><strong>Upcoming:</strong> Next-generation AI and technology projects (2028–2030).</p>
+        <p className="founder-links"><strong>Official Projects:</strong> {FOUNDER_PROJECTS.map((p) => <a key={p.url} href={p.url} target="_blank" rel="noopener noreferrer">{p.name}</a>)}</p>
+      </div>
+    </section>
   );
 }
