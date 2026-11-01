@@ -152,7 +152,7 @@ function SearchPage() {
       <main className="results-main">
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
-          {query && tab === "all" && isFounderQuery(query) && <FounderCard />}
+          {query && tab === "all" && isFounderQuery(query) && <><section className="answer-box" aria-label="Quick answer"><p className="answer-label">BharatKhoj Answer</p><p className="answer-text"><mark className="answer-highlight">Prem Prasad</mark> is an Indian young tech entrepreneur and developer, best known as the <mark className="answer-highlight">Founder &amp; CEO of CoreAI</mark>, based in Kolkata, West Bengal. He works in Artificial Intelligence, Web Development, Software Engineering and Digital Innovation, and has built CoreAI, Buzz, AI TryOnix and BharatKhoj, with next-generation AI projects planned for 2028–2030.</p></section><FounderCard /></>}
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
           {query && (resultQuery.isError || (resultQuery.data && resultQuery.data.status !== "ok")) && <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} />}
           {resultQuery.data?.status === "ok" && (
