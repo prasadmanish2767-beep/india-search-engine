@@ -152,6 +152,7 @@ function SearchPage() {
       <main className="results-main">
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
+          {query && tab === "all" && isFounderQuery(query) && <FounderCard />}
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
           {query && (resultQuery.isError || (resultQuery.data && resultQuery.data.status !== "ok")) && <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} />}
           {resultQuery.data?.status === "ok" && (
