@@ -153,14 +153,12 @@ function SearchPage() {
         <section className="results-column" aria-live="polite">
           {!query && <State icon={<SearchX />} title="Start your BharatKhoj search" text="Enter a topic, question, or website in the search field above." />}
           {resultQuery.isLoading && <State icon={<LoaderCircle className="animate-spin" />} title="Searching BharatKhoj" text="Finding the most relevant results…" />}
-          {resultQuery.isError && <State icon={<WifiOff />} title="Search service unavailable" text={resultQuery.error.message} action={<Button onClick={checkAgain}>Try again</Button>} />}
-          {resultQuery.data?.status === "unconfigured" && <State icon={<AlertCircle />} title="Search service is not configured yet" text="BharatKhoj is ready to connect to a licensed web-search provider or its own index. No simulated results are shown." />}
-          {resultQuery.data?.status === "exhausted" && <State icon={<AlertCircle />} title="BharatKhoj search is temporarily unavailable" text="Our free search quota for this period has been used up. BharatKhoj runs on a free tier only — no fake or simulated results are shown. Once the free quota resets, use the button below to fetch real results." action={<Button onClick={checkAgain} disabled={resultQuery.isFetching}>{resultQuery.isFetching ? "Checking…" : "Check again for real results"}</Button>} />}
+          {query && (resultQuery.isError || (resultQuery.data && resultQuery.data.status !== "ok")) && <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} />}
           {resultQuery.data?.status === "ok" && (
             <>
               <p className="result-stats">{filtersActive ? `Showing ${visibleResults.length} of ${allResults.length} results after filters` : (typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${allResults.length} results`)} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
-              {allResults.length === 0 ? <State icon={<SearchX />} title="No results found" text={`We couldn't find results for “${query}”. Check the spelling or try a broader search.`} /> : visibleResults.length === 0 ? (
-                <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
+              {allResults.length === 0 ? <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} /> : visibleResults.length === 0 ? (
+                <State icon={<SearchX />} title="Widen your filters" text="Try a broader time range, language, or result type to see more results." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
                 <>{tab === "all" && <AnswerBox query={query} results={visibleResults} />}
                 {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
@@ -178,6 +176,16 @@ function SearchPage() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+function Refine({ query, onRetry, busy }: { query: string; onRetry: () => void; busy: boolean }) {
+  const ideas = buildRelated(query, 6);
+  return (
+    <section className="related" aria-label="Refine your search">
+      <h2>Refine your search for “{query}”</h2>
+      <div>{ideas.map((s) => <Link key={s} to="/search" search={{ q: s, page: 1 }}>{s}</Link>)}</div>
+      <p><Button variant="outline" onClick={onRetry} disabled={busy}>{busy ? "Searching…" : "Search again"}</Button></p>
+    </section>
   );
 }
 function ImageGrid({ results }: { results: SearchResult[] }) {
