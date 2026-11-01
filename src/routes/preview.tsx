@@ -50,7 +50,7 @@ function PreviewPage() {
       {data.isFetching && <p className="preview-note"><LoaderCircle className="animate-spin" /> Fetching real results…</p>}
       {data.isError && <p className="preview-note">{data.error.message}</p>}
       {data.data && data.data.status !== "ok" && <p className="preview-note">{data.data.message ?? "Search is unavailable right now."}</p>}
-      {data.data?.status === "ok" && data.data.results.length === 0 && <p className="preview-note">No results for this search.</p>}
+      {data.data?.status === "ok" && data.data.results.length === 0 && <p className="preview-note">Try a broader or differently worded search.</p>}
       <ul className="preview-list">
         {data.data?.results.map((r) => (
           <li key={r.url}>

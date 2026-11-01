@@ -158,7 +158,7 @@ function SearchPage() {
             <>
               <p className="result-stats">{filtersActive ? `Showing ${visibleResults.length} of ${allResults.length} results after filters` : (typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${allResults.length} results`)} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
               {allResults.length === 0 ? <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} /> : visibleResults.length === 0 ? (
-                <State icon={<SearchX />} title="No results match these filters" text="Try widening the time range, language, or result type." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
+                <State icon={<SearchX />} title="Widen your filters" text="Try a broader time range, language, or result type to see more results." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
                 <>{tab === "all" && <AnswerBox query={query} results={visibleResults} />}
                 {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
