@@ -108,7 +108,24 @@ const firecrawlProvider: SearchProvider = {
   async search(query, page, pageSize, vertical, debug) {
     const lovableKey = process.env['LOVABLE_API_KEY'];
     const connectionKey = process.env['FIRECRAWL_API_KEY'];
-    if (!lovableKey || !connectionKey) return unconfiguredProvider.search(query, page, pageSize, vertical, debug);
+    if (!lovableKey || !connectionKey) {
+      // Hosts without search credentials (e.g. Vercel) relay to the main BharatKhoj server.
+      try {
+        const target = new URL("https://india-search-engine.lovable.app/api/search");
+        target.searchParams.set("q", query); target.searchParams.set("page", String(page));
+        target.searchParams.set("pageSize", String(pageSize)); target.searchParams.set("vertical", vertical);
+        const res = await fetch(target, { headers: { Accept: "application/json" } });
+        if (res.ok) {
+          const data = (await res.json()) as Record<string, unknown>;
+          if (data["status"] === "ok" && Array.isArray(data["results"])) {
+            const results = (data["results"] as unknown[]).map(normalizeResult).filter((r): r is SearchResult => r !== null);
+            return { status: "ok", results, relatedSearches: [], hasMore: data["hasMore"] === true };
+          }
+          if (data["status"] === "exhausted") return { status: "exhausted", results: [], relatedSearches: [], hasMore: false, message: "Free search quota is exhausted" };
+        }
+      } catch (e) { console.error("BharatKhoj relay failed", e); }
+      return unconfiguredProvider.search(query, page, pageSize, vertical, debug);
+    }
     const limit = Math.min(pageSize * page, 50);
     const response = await fetch(GATEWAY_SEARCH_URL, {
       method: "POST",
