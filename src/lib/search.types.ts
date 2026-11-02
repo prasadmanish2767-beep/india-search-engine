@@ -7,6 +7,7 @@ export type SearchResult = {
   publishedDate?: string;
   source?: string;
   image?: string;
+  bharatkhojListed?: boolean;
   thumbnail?: string;
   raw?: { title: string; snippet: string };
 };

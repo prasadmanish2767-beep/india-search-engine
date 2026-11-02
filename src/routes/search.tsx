@@ -77,6 +77,7 @@ const searchSchema = z.object({
   time: z.string().catch("any"),
   lang: z.string().catch("any"),
   type: z.string().catch("all"),
+  listed: z.enum(["1"]).optional().catch(undefined),
   tab: z.enum(["all", "images", "news", "videos"]).catch("all"),
 });
 export const Route = createFileRoute("/search")({
@@ -128,7 +129,8 @@ function SearchPage() {
   const typeFilter = (TYPE_OPTIONS.some((o) => o.value === type) ? type : "all") as TypeFilter;
   const filtersActive = tab === "all" && (timeFilter !== "any" || langFilter !== "any" || typeFilter !== "all");
   const allResults = resultQuery.data?.status === "ok" ? resultQuery.data.results : [];
-  const visibleResults = useMemo(() => applyFilters(allResults, { time: timeFilter, lang: langFilter, type: typeFilter }), [allResults, timeFilter, langFilter, typeFilter]);
+  const listedOnly = Route.useSearch().listed === "1";
+  const visibleResults = useMemo(() => applyFilters(allResults, { time: timeFilter, lang: langFilter, type: typeFilter }).filter((r) => !listedOnly || r.bharatkhojListed), [allResults, timeFilter, langFilter, typeFilter, listedOnly]);
   const setFilter = (patch: Partial<{ time: string; lang: string; type: string }>) => { void navigate({ search: (prev) => ({ ...prev, ...patch }) }); };
   const clearFilters = () => setFilter({ time: "any", lang: "any", type: "all" });
   return (
@@ -140,6 +142,7 @@ function SearchPage() {
           <Button variant="ghost" size="icon" asChild><Link to="/settings" aria-label="Search settings"><Settings2 /></Link></Button>
         </div>
         <nav className="result-tabs" aria-label="Search categories">{TABS.map((t) => <Link key={t.id} to="/search" search={(prev) => ({ ...prev, q: query, page: 1, tab: t.id })} className={tab === t.id ? "active" : undefined} aria-current={tab === t.id ? "page" : undefined}>{t.label}</Link>)}<Link to="/history" className="tab-history">History</Link></nav>
+        {tab === "all" && allResults.length > 0 && <div className="listed-toggle-row"><button type="button" className={listedOnly ? "listed-toggle active" : "listed-toggle"} aria-pressed={listedOnly} onClick={() => void navigate({ search: (prev) => ({ ...prev, listed: listedOnly ? undefined : "1" }) })}>🇮🇳 BharatKhoj Listed Only</button></div>}
         {false && (
           <div className="result-filters" role="group" aria-label="Refine results">
             <FilterSelect label="Time" value={timeFilter} options={TIME_OPTIONS} onChange={(value) => setFilter({ time: value })} />
@@ -162,7 +165,7 @@ function SearchPage() {
                 <State icon={<SearchX />} title="Widen your filters" text="Try a broader time range, language, or result type to see more results." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
               ) : (
                 <>{tab === "all" && !isFounderQuery(query) && <AnswerBox query={query} results={visibleResults} />}{tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
-                  <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span></div>
+                  <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span>{result.bharatkhojListed && <span className="listed-badge" tabIndex={0} title="This website was added to the BharatKhoj registry by its owner. A listing is not a safety guarantee.">🇮🇳 BharatKhoj Listed</span>}</div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}</h2></a>
                   <div className="result-body">{result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></a>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
                 </li>)}</ol>}
