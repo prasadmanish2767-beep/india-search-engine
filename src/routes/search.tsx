@@ -140,7 +140,7 @@ function SearchPage() {
           <Button variant="ghost" size="icon" asChild><Link to="/settings" aria-label="Search settings"><Settings2 /></Link></Button>
         </div>
         <nav className="result-tabs" aria-label="Search categories">{TABS.map((t) => <Link key={t.id} to="/search" search={(prev) => ({ ...prev, q: query, page: 1, tab: t.id })} className={tab === t.id ? "active" : undefined} aria-current={tab === t.id ? "page" : undefined}>{t.label}</Link>)}<Link to="/history" className="tab-history">History</Link></nav>
-        {tab === "all" && resultQuery.data?.status === "ok" && allResults.length > 0 && (
+        {false && (
           <div className="result-filters" role="group" aria-label="Refine results">
             <FilterSelect label="Time" value={timeFilter} options={TIME_OPTIONS} onChange={(value) => setFilter({ time: value })} />
             <FilterSelect label="Language" value={langFilter} options={LANG_OPTIONS} onChange={(value) => setFilter({ lang: value })} />
@@ -157,20 +157,22 @@ function SearchPage() {
           {query && (resultQuery.isError || (resultQuery.data && resultQuery.data.status !== "ok")) && <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} />}
           {resultQuery.data?.status === "ok" && (
             <>
-              <p className="result-stats">{filtersActive ? `Showing ${visibleResults.length} of ${allResults.length} results after filters` : (typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${allResults.length} results`)} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>
+              {tab !== "all" && <p className="result-stats">{filtersActive ? `Showing ${visibleResults.length} of ${allResults.length} results after filters` : (typeof resultQuery.data.total === "number" ? `About ${resultQuery.data.total.toLocaleString("en-IN")} results` : `${allResults.length} results`)} ({(resultQuery.data.elapsedMs / 1000).toFixed(2)} seconds)</p>}
               {allResults.length === 0 ? <Refine query={query} onRetry={checkAgain} busy={resultQuery.isFetching} /> : visibleResults.length === 0 ? (
                 <State icon={<SearchX />} title="Widen your filters" text="Try a broader time range, language, or result type to see more results." action={<Button variant="outline" onClick={clearFilters}>Clear filters</Button>} />
+              ) : tab === "all" ? (
+                <>{!isFounderQuery(query) && <AnswerBox query={query} results={visibleResults} />}
+                <nav className="answer-sources" aria-label="Sources">{visibleResults.slice(0, 4).map((r) => <a key={r.url} href={r.url} target="_blank" rel="noopener noreferrer"><SiteIcon src={r.favicon} label={r.displayUrl} />{new URL(r.url).hostname.replace(/^www\./, "")}</a>)}</nav></>
               ) : (
-                <>{tab === "all" && <AnswerBox query={query} results={visibleResults} />}
-                {tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
+                <>{tab === "images" ? <ImageGrid results={visibleResults} /> : <ol className={`result-list result-list-${tab}`}>{visibleResults.map((result) => <li key={result.url}>
                   <div className="result-source"><SiteIcon src={result.favicon} label={result.displayUrl} /><span className="result-source-text"><strong>{result.source || new URL(result.url).hostname}</strong><small>{result.displayUrl}</small></span></div>
                   <a href={result.url} target="_blank" rel="noopener noreferrer"><h2>{result.title}</h2></a>
-                  <div className="result-body">{(tab === "news" || tab === "videos") && result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></a>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
+                  <div className="result-body">{result.thumbnail && <a className={`result-thumb ${tab === "videos" ? "is-video" : ""}`} href={result.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"><img src={result.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = "none"; }} /></a>}<div><p>{result.snippet}</p>{result.publishedDate && <time>{result.publishedDate}</time>}</div></div>
                 </li>)}</ol>}
                  </>
               )}
-              {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (allResults.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.map((item) => <Link key={item} to="/search" search={(prev) => ({ ...prev, q: item, page: 1 })}>{item}</Link>)}</div></section> : null; })()}
-              {visibleResults.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page - 1 })}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page + 1 })}>Next</Link></Button></nav>}
+              {(() => { const related = resultQuery.data.relatedSearches.length > 0 ? resultQuery.data.relatedSearches : (allResults.length > 0 ? buildRelated(query) : []); return related.length > 0 ? <section className="related"><h2>Related searches</h2><div>{related.slice(0, 6).map((item) => <Link key={item} to="/search" search={(prev) => ({ ...prev, q: item, page: 1 })}>{item}</Link>)}</div></section> : null; })()}
+              {tab !== "all" && visibleResults.length > 0 && <nav className="pagination" aria-label="Search result pages"><Button variant="outline" disabled={page <= 1} asChild={page > 1}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page - 1 })}>Previous</Link></Button><span>Page {page}</span><Button disabled={!resultQuery.data.hasMore} asChild={resultQuery.data.hasMore}><Link to="/search" search={(prev) => ({ ...prev, q: query, page: page + 1 })}>Next</Link></Button></nav>}
             </>
           )}
         </section>
