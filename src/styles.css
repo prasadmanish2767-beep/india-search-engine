@@ -448,3 +448,4 @@
 .answer-sources a:hover { border-color: var(--answer-highlight-ink); transform: translateY(-1px); }
 .answer-sources img, .answer-sources .site-icon-fallback { width: 16px; height: 16px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .answer-box, .answer-facts li, .answer-sources { animation: none; } .answer-sources a:hover { transform: none; } }
+.founder-photo { display:block; margin:.75rem auto 1rem; width:min(100%,14rem); height:auto; border-radius:1rem; object-fit:contain; }
