@@ -449,3 +449,7 @@
 .answer-sources img, .answer-sources .site-icon-fallback { width: 16px; height: 16px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .answer-box, .answer-facts li, .answer-sources { animation: none; } .answer-sources a:hover { transform: none; } }
 .founder-photo { display:block; margin:.75rem auto 1rem; width:min(100%,14rem); height:auto; border-radius:1rem; object-fit:contain; }
+.listed-toggle-row{max-width:46rem;margin:.6rem auto 0;padding:0 1rem}
+.listed-toggle{font-size:.85rem;font-weight:600;padding:.35rem .8rem;border-radius:999px;border:1px solid var(--border);background:var(--background);color:var(--foreground);transition:background .2s,border-color .2s}
+.listed-toggle.active{border-color:var(--primary);background:color-mix(in oklab,var(--primary) 12%,transparent)}
+.listed-badge{display:inline-flex;align-items:center;margin-left:.5rem;padding:.12rem .5rem;font-size:.72rem;font-weight:700;border-radius:999px;border:1px solid color-mix(in oklab,var(--primary) 45%,transparent);color:var(--foreground);background:color-mix(in oklab,var(--primary) 8%,transparent);white-space:nowrap;cursor:help}

@@ -208,7 +208,8 @@ export async function searchWeb(query: string, page: number, pageSize: number, f
   const task = (async () => {
     try {
       const result = await getProvider().search(query, page, pageSize, vertical, debug);
-      const value: SearchResponse = { ...result, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
+      const listedResults = result.status === "ok" && result.results.length ? await (await import("./listings.server")).markListed(result.results) : result.results;
+      const value: SearchResponse = { ...result, results: listedResults, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
       if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
       else if (value.status === "exhausted") cache.set(key, { expires: Date.now() + EXHAUSTED_TTL_MS, value });
       return value;
