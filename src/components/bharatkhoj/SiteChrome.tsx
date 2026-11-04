@@ -11,7 +11,6 @@ export function SiteHeader() {
         <nav className="desktop-nav" aria-label="Main navigation">
           <Link to="/submit" activeProps={{ className: "nav-active" }}>List Your Site</Link>
           <Link to="/console" activeProps={{ className: "nav-active" }}>Search Console</Link>
-          <Link to="/console" activeProps={{ className: "nav-active" }}>Search Console</Link>
           <Link to="/history" activeProps={{ className: "nav-active" }}>History</Link>
           <Link to="/about" activeProps={{ className: "nav-active" }}>About</Link>
           <Link to="/privacy" activeProps={{ className: "nav-active" }}>Privacy</Link>
