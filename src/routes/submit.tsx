@@ -24,7 +24,7 @@ function SubmitPage() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const embed = submitted ? `<a href="https://india-search-engine.vercel.app/search?q=${encodeURIComponent(submitted.domain)}" target="_blank" rel="noopener noreferrer" aria-label="Find ${submitted.title.replace(/[&<>"']/g, "")} on BharatKhoj"><img src="https://india-search-engine.vercel.app/bharatkhoj-listed-${theme}.svg" alt="BharatKhoj Listed" width="168" height="34" /></a>` : "";
+  const embed = submitted ? `<a href="https://bharatkhoj.vercel.app/search?q=${encodeURIComponent(submitted.domain)}" target="_blank" rel="noopener noreferrer" aria-label="Find ${submitted.title.replace(/[&<>"']/g, "")} on BharatKhoj"><img src="https://bharatkhoj.vercel.app/bharatkhoj-listed-${theme}.svg" alt="BharatKhoj Listed" width="168" height="34" /></a>` : "";
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError(""); setBusy(true);
     try {
