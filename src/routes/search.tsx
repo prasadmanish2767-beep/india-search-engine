@@ -215,7 +215,7 @@ const FOUNDER_PROJECTS = [
   { name: "CoreAI", url: "https://coreaii.vercel.app/" },
   { name: "Buzz", url: "https://buzzofficial.vercel.app/" },
   { name: "AI TryOnix", url: "https://aitryonix.vercel.app/" },
-  { name: "BharatKhoj", url: "https://india-search-engine.vercel.app/" },
+  { name: "BharatKhoj", url: "https://bharatkhoj.vercel.app/" },
 ];
 function FounderCard() {
   return (
