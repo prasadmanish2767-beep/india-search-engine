@@ -207,7 +207,13 @@ export async function searchWeb(query: string, page: number, pageSize: number, f
   const start = performance.now();
   const task = (async () => {
     try {
-      const result = await getProvider().search(query, page, pageSize, vertical, debug);
+      let result: Omit<SearchResponse, "query" | "page" | "elapsedMs">;
+      try { result = await getProvider().search(query, page, pageSize, vertical, debug); }
+      catch (e) { console.error("Main search failed", e); result = { status: "exhausted", results: [], relatedSearches: [], hasMore: false }; }
+      if ((result.status !== "ok" || !result.results.length) && vertical === "web" && page === 1) {
+        const free = await (await import("./free-sources.server")).freeInstantAnswer(query);
+        if (free?.results.length) result = { status: "ok", results: free.results, relatedSearches: [], hasMore: false };
+      }
       const listedResults = result.status === "ok" && result.results.length ? await (await import("./listings.server")).markListed(result.results) : result.results;
       const value: SearchResponse = { ...result, results: listedResults, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
       if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });

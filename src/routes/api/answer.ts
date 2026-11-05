@@ -28,8 +28,31 @@ export const Route = createFileRoute("/api/answer")({
         const key = JSON.stringify([q.toLowerCase(), sources.map((s) => [s.url, s.snippet, s.image])]);
         const hit = cache.get(key);
         if (hit && hit.expires > Date.now()) return Response.json(hit.value);
+        const value = (await aiAnswer(q, sources)) ?? (await freeAnswer(q, sources));
+        if (value) cache.set(key, { expires: Date.now() + 10 * 60_000, value });
+        return Response.json(value ?? empty);
+      },
+    },
+  },
+});
+
+async function freeAnswer(q: string, sources: z.infer<typeof Body>["sources"]): Promise<AnswerData | null> {
+  const { freeInstantAnswer } = await import("@/lib/free-sources.server");
+  const free = await freeInstantAnswer(q);
+  if (!free) return null;
+  const idx = sources.findIndex((s) => s.url === free.url);
+  const sentences = free.answer.match(/[^.!?]+[.!?]+/g) ?? [free.answer];
+  return {
+    answer: sentences.slice(0, 4).join(" ").trim().slice(0, 800),
+    facts: idx >= 0 ? sentences.slice(4, 7).map((t) => ({ text: t.trim().slice(0, 200), sourceIndex: idx })).filter((f) => f.text) : [],
+    imageIndex: null,
+    imageQuery: free.image ? q : null,
+  };
+}
+
+async function aiAnswer(q: string, sources: z.infer<typeof Body>["sources"]): Promise<AnswerData | null> {
         const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) return Response.json(empty);
+        if (!apiKey) return null;
         const context = sources.map((s, i) => `[${i}] ${s.title}: ${s.snippet}${s.image ? " [source has image]" : ""}`).join("\n");
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -42,22 +65,18 @@ export const Route = createFileRoute("/api/answer")({
             ],
           }),
         });
-        if (!res.ok) { console.error(`Answer failed [${res.status}]: ${await res.text()}`); return Response.json(empty); }
+        if (!res.ok) { console.error(`Answer failed [${res.status}]: ${await res.text()}`); return null; }
         const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
         let raw: unknown;
         try { raw = JSON.parse((data.choices?.[0]?.message?.content ?? "").replace(/^```(?:json)?\s*|\s*```$/g, "").trim()); }
-        catch { return Response.json(empty); }
+        catch { return null; }
         const output = Output.safeParse(raw);
-        if (!output.success || !output.data.answer.trim()) return Response.json(empty);
-        const value: AnswerData = {
+        if (!output.success || !output.data.answer.trim()) return null;
+        const result: AnswerData = {
           answer: output.data.answer.trim().slice(0, 800),
           facts: output.data.facts.filter((fact) => fact.text.trim() && sources[fact.sourceIndex]).map((fact) => ({ text: fact.text.trim(), sourceIndex: fact.sourceIndex })),
           imageIndex: output.data.imageIndex !== null && sources[output.data.imageIndex]?.image ? output.data.imageIndex : null,
           imageQuery: output.data.imageQuery && output.data.answer.toLowerCase().includes(output.data.imageQuery.trim().toLowerCase()) ? output.data.imageQuery.trim() : null,
         };
-        cache.set(key, { expires: Date.now() + 10 * 60_000, value });
-        return Response.json(value);
-      },
-    },
-  },
-});
+        return result;
+}
