@@ -9,8 +9,6 @@ export function SiteHeader() {
       <div className="site-header-inner">
         <Brand compact />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link to="/submit" activeProps={{ className: "nav-active" }}>List Your Site</Link>
-          <Link to="/console" activeProps={{ className: "nav-active" }}>Search Console</Link>
           <Link to="/history" activeProps={{ className: "nav-active" }}>History</Link>
           <Link to="/about" activeProps={{ className: "nav-active" }}>About</Link>
           <Link to="/privacy" activeProps={{ className: "nav-active" }}>Privacy</Link>
@@ -22,7 +20,7 @@ export function SiteHeader() {
         <details className="mobile-nav">
           <summary aria-label="Open navigation"><Menu /></summary>
           <div>
-            <Link to="/submit">List Your Site</Link><Link to="/console">Search Console</Link><Link to="/history">History</Link><Link to="/about">About</Link><Link to="/privacy">Privacy</Link>
+            <Link to="/history">History</Link><Link to="/about">About</Link><Link to="/privacy">Privacy</Link>
             <Link to="/contact">Contact</Link><Link to="/settings">Settings</Link>
           </div>
         </details>
@@ -37,7 +35,7 @@ export function SiteFooter() {
       <div className="site-footer-inner">
         <div className="footer-brand"><p>© 2026 BharatKhoj. All rights reserved.</p></div>
         <nav aria-label="Footer navigation">
-          <Link to="/submit">List Your Site</Link><Link to="/console">Search Console</Link><Link to="/history">History</Link><Link to="/preview">Result preview</Link><Link to="/about">About</Link><Link to="/privacy">Privacy Policy</Link><Link to="/contact">Contact</Link>
+          <Link to="/history">History</Link><Link to="/preview">Result preview</Link><Link to="/about">About</Link><Link to="/privacy">Privacy Policy</Link><Link to="/contact">Contact</Link>
         </nav>
       </div>
     </footer>
