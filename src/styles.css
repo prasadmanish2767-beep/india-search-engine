@@ -64,29 +64,29 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.995 0.002 90);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.31 0.025 215);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.67 0.2 45);
+  --primary: oklch(0.55 0.22 260);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.51 0.14 151);
+  --secondary: oklch(0.63 0.18 150);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.97 0.005 100);
   --muted-foreground: oklch(0.52 0.035 220);
-  --accent: oklch(0.95 0.045 145);
-  --accent-foreground: oklch(0.34 0.1 151);
+  --accent: oklch(0.95 0.03 255);
+  --accent-foreground: oklch(0.4 0.18 260);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.91 0.008 100);
   --input: oklch(0.89 0.01 100);
-  --ring: oklch(0.67 0.2 45);
-  --brand-orange: oklch(0.67 0.2 45);
-  --brand-green: oklch(0.51 0.14 151);
+  --ring: oklch(0.55 0.22 260);
+  --brand-orange: oklch(0.6 0.23 32);
+  --brand-green: oklch(0.62 0.18 150);
   --brand-ink: oklch(0.31 0.025 215);
-  --brand-blue: oklch(0.48 0.15 255);
+  --brand-blue: oklch(0.52 0.22 260);
   --answer-highlight-bg: oklch(0.94 0.035 245);
   --answer-highlight-ink: oklch(0.38 0.11 250);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -177,14 +177,14 @@
 
 @layer components {
   .home-page, .site-page, .results-page { min-height: 100svh; display: flex; flex-direction: column; background: var(--background); }
-  .home-page::before, .site-header::before, .results-header::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--brand-orange) 0 50%, var(--brand-green) 50%); }
+  .home-page::before, .site-header::before, .results-header::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--brand-orange) 0 33%, var(--brand-blue) 33% 67%, var(--brand-green) 67%); }
   .home-page { position: relative; }
   .home-main { flex: 1; display: flex; flex-direction: column; padding: 2rem clamp(1rem, 4vw, 4rem); }
   .home-search { flex: 1; width: min(100%, 42rem); margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 8vh; }
   .home-search > p { margin: -2.2rem 0 1.5rem; color: var(--muted-foreground); font-size: 1.05rem; }
   .search-box-wrap { position: relative; width: 100%; z-index: 10; }
   .search-box { height: 3.7rem; display: flex; align-items: center; padding: 0 .45rem 0 1.1rem; border: 1px solid var(--input); border-radius: 999px; background: var(--card); box-shadow: 0 8px 26px oklch(0.31 0.025 215 / .09); transition: border-color .2s, box-shadow .2s; }
-  .search-box:focus-within { border-color: var(--brand-orange); box-shadow: 0 9px 30px oklch(0.31 0.025 215 / .12); }
+  .search-box:focus-within { border-color: var(--brand-blue); box-shadow: 0 9px 30px oklch(0.31 0.025 215 / .12); }
   .search-box input { min-width: 0; flex: 1; height: 100%; border: 0; outline: 0; padding: 0 .8rem; color: var(--foreground); background: transparent; }
   .search-leading { width: 1.15rem; color: var(--muted-foreground); }
   .search-submit { border-radius: 999px; }
@@ -213,13 +213,13 @@
   .site-header, .results-header { position: relative; background: var(--background); border-bottom: 1px solid var(--border); }
   .site-header-inner { height: 4.5rem; max-width: 75rem; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
   .desktop-nav { display: flex; align-items: center; gap: 1.5rem; font-size: .82rem; color: var(--muted-foreground); }
-  .desktop-nav a:hover, .desktop-nav .nav-active { color: var(--brand-orange); }
+  .desktop-nav a:hover, .desktop-nav .nav-active { color: var(--brand-blue); }
   .mobile-nav { display: none; position: relative; }
   .mobile-nav summary { list-style: none; display: flex; cursor: pointer; }
   .mobile-nav > div { position: absolute; right: 0; top: 2rem; min-width: 10rem; padding: .5rem; background: var(--popover); border: 1px solid var(--border); box-shadow: 0 10px 25px oklch(0.31 0.025 215 / .12); z-index: 20; }
   .mobile-nav a { display: block; padding: .6rem; }
   .site-footer { margin-top: auto; border-top: 1px solid var(--border); position: relative; }
-  .site-footer::before { content: ""; position: absolute; top: -3px; inset-inline: 0; height: 3px; background: linear-gradient(90deg, var(--brand-orange) 0 35%, transparent 35% 65%, var(--brand-green) 65%); }
+  .site-footer::before { content: ""; position: absolute; top: -3px; inset-inline: 0; height: 3px; background: linear-gradient(90deg, var(--brand-orange) 0 33%, var(--brand-blue) 33% 67%, var(--brand-green) 67%); }
   .site-footer-inner { min-height: 4.5rem; max-width: 75rem; margin: 0 auto; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--muted-foreground); font-size: .75rem; }
   .site-footer nav { display: flex; gap: 1.5rem; }
   .footer-brand { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
@@ -369,7 +369,7 @@
 @layer components {
   .result-tabs a { padding-bottom: .75rem; border-bottom: 2px solid transparent; transition: color .18s ease, border-color .18s ease; }
   .result-tabs a:hover { color: var(--foreground); }
-  .result-tabs a.active { color: var(--brand-orange); border-bottom-color: var(--brand-orange); font-weight: 600; }
+  .result-tabs a.active { color: var(--brand-blue); border-bottom-color: var(--brand-blue); font-weight: 600; }
   .result-tabs .tab-history { margin-left: auto; }
   .result-body { display: flex; gap: .9rem; align-items: flex-start; }
   .result-thumb { flex: none; position: relative; width: 8.5rem; aspect-ratio: 16/10; border-radius: calc(var(--radius) + 2px); overflow: hidden; background: var(--muted); border: 1px solid var(--border); }
@@ -467,3 +467,7 @@
 .console-code { display: block; padding: .6rem; border-radius: .5rem; background: var(--muted); font-size: .8rem; overflow-wrap: anywhere; white-space: pre-wrap; }
 .console-list { display: grid; gap: .3rem; font-size: .95rem; overflow-wrap: anywhere; }
 .console-msg { font-weight: 600; }
+
+.answer-box { border-left-color: var(--brand-blue); box-shadow: 0 10px 30px -14px color-mix(in oklab, var(--brand-blue) 35%, transparent); border-radius: calc(var(--radius) + 6px); }
+.answer-label { color: var(--brand-blue); }
+.search-box:focus-within { box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand-blue) 14%, transparent), 0 9px 30px oklch(0.31 0.025 215 / .1); }

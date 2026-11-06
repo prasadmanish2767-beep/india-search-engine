@@ -12,8 +12,7 @@ export function Brand({ compact = false, className, link = true }: BrandProps) {
     </span>
   ) : (
     <span className={cn("inline-flex flex-col items-center", className)}>
-      <img src={BRAND_LOGO_PATH} alt="BharatKhoj — India's First Search Engine" width={1774} height={887} className="hidden h-auto w-full max-w-[28rem] object-contain sm:block" />
-      <img src={BRAND_ICON_PATH} alt="BharatKhoj" width={1370} height={1148} className="h-auto w-32 object-contain sm:hidden" />
+      <img src={BRAND_LOGO_PATH} alt="BharatKhoj — India's First Search Engine" width={1774} height={887} className="h-auto w-full max-w-[18rem] object-contain sm:max-w-[28rem]" />
     </span>
   );
   return link ? <Link to="/" aria-label="BharatKhoj home">{content}</Link> : content;
