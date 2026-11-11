@@ -179,6 +179,15 @@
   .home-page, .site-page, .results-page { min-height: 100svh; display: flex; flex-direction: column; background: var(--background); }
   .home-page::before, .site-header::before, .results-header::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--brand-orange) 0 33%, var(--brand-blue) 33% 67%, var(--brand-green) 67%); }
   .home-page { position: relative; }
+  .logo-intro { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: hidden; background: var(--background); animation: bk-intro-exit 3.4s ease-in forwards; }
+  .logo-intro-stage { position: relative; width: min(90vw, 56.25rem); aspect-ratio: 2 / 1; }
+  .logo-intro-icon, .logo-intro-full { position: absolute; object-fit: contain; }
+  .logo-intro-icon { inset: 0; width: 32%; height: 100%; margin: auto; animation: bk-intro-icon 3s cubic-bezier(.22, 1, .36, 1) forwards; }
+  .logo-intro-full { inset: 0; width: 100%; height: 100%; }
+  .logo-intro-full { opacity: 0; clip-path: inset(0 100% 0 0); animation: bk-intro-full 3s cubic-bezier(.65, 0, .35, 1) forwards; }
+  @keyframes bk-intro-icon { 0% { opacity: 0; transform: scale(.3) rotate(-20deg); filter: blur(10px); } 22% { opacity: 1; transform: scale(1.08) rotate(3deg); filter: blur(0); } 35% { transform: scale(1) rotate(0); } 50% { opacity: 1; transform: scale(1); } 62%, 100% { opacity: 0; transform: scale(.95); } }
+  @keyframes bk-intro-full { 0%, 48% { opacity: 0; clip-path: inset(0 100% 0 0); } 52% { opacity: 1; clip-path: inset(0 72% 0 0); } 85%, 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
+  @keyframes bk-intro-exit { 0%, 90% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
   .home-main { flex: 1; display: flex; flex-direction: column; padding: 2rem clamp(1rem, 4vw, 4rem); }
   .home-search { flex: 1; width: min(100%, 42rem); margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 8vh; }
   .home-search > p { margin: -2.2rem 0 1.5rem; color: var(--muted-foreground); font-size: 1.05rem; }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Brand } from "@/components/bharatkhoj/Brand";
+import { LogoIntro } from "@/components/bharatkhoj/LogoIntro";
 import { SearchBox } from "@/components/bharatkhoj/SearchBox";
 import { SiteFooter } from "@/components/bharatkhoj/SiteChrome";
 import { brandImageMeta, BRAND_LOGO_URL, BRAND_SITE_URL } from "@/lib/brand";
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <div className="home-page">
+      <LogoIntro />
       <main className="home-main">
         <section className="home-search" aria-labelledby="home-title">
           <Brand link={false} />
