@@ -12,6 +12,7 @@ function safeUrl(value: unknown): string | null {
     return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.toString() : null;
   } catch { return null; }
 }
+
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "–", mdash: "—", hellip: "…", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“" };
 function decodeEntities(s: string): string {
   return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
@@ -19,6 +20,7 @@ function decodeEntities(s: string): string {
     return ENTITIES[e.toLowerCase()] ?? m;
   });
 }
+
 export function text(value: unknown, limit: number): string {
   if (typeof value !== "string") return "";
   const clean = decodeEntities(value)
@@ -41,6 +43,7 @@ export function text(value: unknown, limit: number): string {
     .trim();
   return clean.length > limit ? clean.slice(0, limit).replace(/\s\S*$/, "") + "…" : clean;
 }
+
 function normalizeResult(value: unknown): SearchResult | null {
   if (!value || typeof value !== "object") return null;
   const raw = value as Record<string, unknown>;
@@ -210,10 +213,25 @@ export async function searchWeb(query: string, page: number, pageSize: number, f
       let result: Omit<SearchResponse, "query" | "page" | "elapsedMs">;
       try { result = await getProvider().search(query, page, pageSize, vertical, debug); }
       catch (e) { console.error("Main search failed", e); result = { status: "exhausted", results: [], relatedSearches: [], hasMore: false }; }
-      if ((result.status !== "ok" || !result.results.length) && vertical === "web" && page === 1) {
-        const free = await (await import("./free-sources.server")).freeInstantAnswer(query);
-        if (free?.results.length) result = { status: "ok", results: free.results, relatedSearches: [], hasMore: false };
+      
+      // Free fallback chain for all tabs when main search is exhausted or empty
+      if (result.status !== "ok" || !result.results.length) {
+        const free = await import("./free-sources.server");
+        if (vertical === "web" && page === 1) {
+          const ans = await free.freeInstantAnswer(query);
+          if (ans?.results.length) result = { status: "ok", results: ans.results, relatedSearches: [], hasMore: false };
+        } else if (vertical === "images") {
+          const imgs = await free.freeImages(query);
+          if (imgs.length) result = { status: "ok", results: imgs, relatedSearches: [], hasMore: false };
+        } else if (vertical === "news") {
+          const news = await free.freeNews(query);
+          if (news.length) result = { status: "ok", results: news, relatedSearches: [], hasMore: false };
+        } else if (vertical === "videos") {
+          const vids = await free.freeVideos(query);
+          if (vids.length) result = { status: "ok", results: vids, relatedSearches: [], hasMore: false };
+        }
       }
+
       const listedResults = result.status === "ok" && result.results.length ? await (await import("./listings.server")).markListed(result.results) : result.results;
       const value: SearchResponse = { ...result, results: listedResults, query, page, elapsedMs: Math.max(0, Math.round(performance.now() - start)) };
       if (value.status === "ok") cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
@@ -226,4 +244,5 @@ export async function searchWeb(query: string, page: number, pageSize: number, f
   inflight.set(key, task);
   return task;
 }
+
 export async function getSuggestions(query: string): Promise<string[]> { return getProvider().suggestions(query, 6); }
