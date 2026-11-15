@@ -1,11 +1,24 @@
-import { brandImageMeta } from "@/lib/brand";
-import { useState, useEffect } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+// src/routes/settings.tsx
 import { ContentLayout } from "@/components/bharatkhoj/ContentLayout";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { INDIAN_LANGUAGES, getCurrentLanguage, setLanguage, t, LanguageCode } from "@/lib/i18n";
+import { brandImageMeta } from "@/lib/brand";
+import {
+  getCurrentLanguage,
+  INDIAN_LANGUAGES,
+  setLanguage,
+  t,
+  type LanguageCode,
+} from "@/lib/i18n";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 const description = "Customize language, safe search, suggestions, and result preferences for BharatKhoj.";
 
@@ -80,13 +93,29 @@ function SettingsPage() {
         </Setting>
 
         <Button type="submit">{t("saveSettings", lang)}</Button>
-        {saved && <p className="form-success" role="status" style={{ color: "#168A45", marginTop: "1rem" }}>{t("savedMsg", lang)}</p>}
+        {saved && (
+          <p
+            className="form-success"
+            role="status"
+            style={{ color: "#168A45", marginTop: "1rem", fontWeight: 500 }}
+          >
+            {t("savedMsg", lang)}
+          </p>
+        )}
       </form>
     </ContentLayout>
   );
 }
 
-function Setting({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+function Setting({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="setting-row">
       <span>
